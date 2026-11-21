@@ -74,7 +74,7 @@ button,input{font:inherit}
 <div id="add"><button class="btn" id="adm">🛠<span> จัดการ</span></button><button class="btn" id="tg">＋ ร่วมกิจกรรม</button>
 <div id="panel">
 <div class="tabs"><button data-k="krathong" class="on">🪷 ลอยกระทง</button><button data-k="lantern">🏮 ปล่อยโคม</button></div>
-<small id="pkl">เลือกแบบกระทง</small><div class="pick" id="pick"></div>
+<small id="pkl">วาดเองแล้วอัปรูป หรือเลือกแบบสำเร็จรูป</small><div class="pick" id="pick"></div>
 <div id="upbox"><small id="uph">รูปกระทงของคุณ (วางบนพื้นเรียบสีเดียว)</small><input id="fi" type="file" accept="image/*"></div>
 <small>ชื่อของคุณ</small><input id="nm" maxlength="24"><small>คำอธิษฐาน</small><input id="pr" maxlength="90" placeholder="เช่น ขอให้ทุกคนมีความสุข">
 <div id="ms" style="font-size:12px;min-height:16px;margin-bottom:6px;color:#ffd"></div><button class="btn" id="go">ลอยกระทง 🪷</button></div></div>
@@ -336,18 +336,18 @@ $('#snd').onclick=e=>{e.stopPropagation();sfxSet(!sfx.on)};
 {const first=()=>{removeEventListener('pointerdown',first,true);if(!sfx.muted&&!sfx.on)sfxSet(true)};addEventListener('pointerdown',first,true)}
 document.addEventListener('visibilitychange',()=>{if(!sfx.ctx||!sfx.on)return;if(document.hidden){sfx.au.pause()}else{sfx.ctx.resume();sfx.au.play().catch(()=>{})}});
 /* ---------- join panel ---------- */
-let mode='krathong',choice='k1';
+let mode='krathong',choice='up';
 $('#nm').value=ls.get('lk_name','');
 $('#tg').onclick=()=>$('#panel').classList.toggle('on');
 const ms=x=>$('#ms').textContent=x;
 function buildPick(){const p=$('#pick');p.innerHTML='';const pre=mode==='lantern'?'l':'k';
-  [1,2,3,4,5,6,'up'].forEach(n=>{const id=n==='up'?'up':pre+n,b=document.createElement('button');b.type='button';
-    if(id==='up')b.innerHTML='📷<br>รูปของฉัน';else{b.innerHTML='<img alt="">';b.firstChild.src=PRE[id]}
+  ['up',1,2,3,4,5,6].forEach(n=>{const id=n==='up'?'up':pre+n,b=document.createElement('button');b.type='button';
+    if(id==='up')b.innerHTML='🎨<br>รูปที่<br>วาดเอง';else{b.innerHTML='<img alt="">';b.firstChild.src=PRE[id]}
     if(id===choice)b.classList.add('on');b.onclick=()=>{choice=id;[...p.children].forEach(x=>x.classList.toggle('on',x===b));$('#upbox').classList.toggle('on',id==='up')};p.appendChild(b)});
   $('#upbox').classList.toggle('on',choice==='up')}
-document.querySelectorAll('.tabs button').forEach(b=>b.onclick=()=>{mode=b.dataset.k;choice=mode==='lantern'?'l1':'k1';
+document.querySelectorAll('.tabs button').forEach(b=>b.onclick=()=>{mode=b.dataset.k;choice='up';
   document.querySelectorAll('.tabs button').forEach(x=>x.classList.toggle('on',x===b));
-  const L=mode==='lantern';$('#pkl').textContent=L?'เลือกแบบโคม':'เลือกแบบกระทง';$('#uph').textContent=L?'รูปโคมของคุณ (วางบนพื้นเรียบสีเดียว)':'รูปกระทงของคุณ (วางบนพื้นเรียบสีเดียว)';
+  const L=mode==='lantern';$('#pkl').textContent='วาดเองแล้วอัปรูป หรือเลือกแบบสำเร็จรูป';$('#uph').textContent=L?'รูปโคมของคุณ (วางบนพื้นเรียบสีเดียว)':'รูปกระทงของคุณ (วางบนพื้นเรียบสีเดียว)';
   $('#go').textContent=L?'ปล่อยโคม 🏮':'ลอยกระทง 🪷';ms('');buildPick()});
 buildPick();
 function clean(img,mx){const s=Math.min(1,mx/Math.max(img.width,img.height)),c=document.createElement('canvas');c.width=Math.max(1,Math.round(img.width*s));c.height=Math.max(1,Math.round(img.height*s));const x=c.getContext('2d');x.drawImage(img,0,0,c.width,c.height);
