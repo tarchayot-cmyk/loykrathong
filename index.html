@@ -28,8 +28,7 @@ body{position:fixed;inset:0;width:100%;height:100%;margin:0;overflow:hidden;over
 .k{position:absolute;left:0;animation:drift linear infinite;will-change:transform;cursor:pointer}@keyframes drift{from{transform:translateX(-25vw)}to{transform:translateX(110vw)}}
 .b{position:relative;animation:bob ease-in-out infinite;transform-origin:50% 92%}
 @keyframes bob{0%,100%{transform:translateY(0) rotate(-3deg)}50%{transform:translateY(-7px) rotate(3deg)}}
-.b img{width:100%;display:block;filter:drop-shadow(0 6px 6px rgba(0,0,0,.35));-webkit-mask-image:linear-gradient(to top,transparent 0,rgba(0,0,0,.25) 7%,#000 19%);mask-image:linear-gradient(to top,transparent 0,rgba(0,0,0,.25) 7%,#000 19%)}
-.b::after{content:'';position:absolute;left:6%;right:6%;bottom:3%;height:11%;border-radius:50%;border:2px solid rgba(255,255,255,.45);box-shadow:0 0 10px rgba(255,210,120,.35);animation:rip 3.2s ease-in-out infinite;pointer-events:none}@keyframes rip{50%{transform:scaleX(1.12);opacity:.55}}
+.b img{width:100%;display:block;filter:drop-shadow(0 6px 6px rgba(0,0,0,.35))}
 .g{position:absolute;left:28%;top:2%;width:16%;aspect-ratio:1;border-radius:50%;background:radial-gradient(rgba(255,200,80,.85),rgba(255,140,0,0) 70%);mix-blend-mode:screen;animation:fl .9s ease-in-out infinite alternate;pointer-events:none}
 @keyframes fl{from{opacity:.4;transform:scale(.8)}to{opacity:1;transform:scale(1.2)}}
 .cap{position:absolute;left:50%;transform:translateX(-50%);top:100%;white-space:nowrap;font-size:12px;background:rgba(0,0,0,.35);padding:1px 8px;border-radius:9px;margin-top:2px}
@@ -176,7 +175,7 @@ const PRE={};KC.forEach((c,i)=>PRE['k'+(i+1)]=krSVG(c));LC.forEach((c,i)=>PRE['l
 const srcOf=v=>v.img||PRE[v.preset]||PRE[v.kind==='lantern'?'l1':'k1'];
 
 /* ---------- floating items ---------- */
-const groups=[{b:21,w:9,z:3,d:150},{b:15.5,w:13,z:5,d:115},{b:10,w:18,z:7,d:85}];
+const groups=[{b:20,w:9,z:3,d:150},{b:14.3,w:13,z:5,d:115},{b:8.6,w:18,z:7,d:85}];
 const SB_URL='https://msxbwdlnwdvcmdgcfrtf.supabase.co',SB_KEY='sb_publishable_SdnxTnFw7fjl8UH5mEWmEw_xqpSYS5S';
 const MAX={krathong:60,lantern:40},NAME={krathong:'กระทง',lantern:'โคม'};
 let sb=null,bag=[];const cnt={krathong:0,lantern:0},orders={krathong:[],lantern:[]},els={};let demos=[];
@@ -192,7 +191,7 @@ function tap(el,id){const what=NAME[el._kind]||'กระทง';
   if(id&&myKeys[id]&&confirm(`${what}ของคุณ${el._p?': '+el._p:''}\n\nต้องการลบ${what}นี้ไหม?`))return delK(id);
   show(el)}
 function addK(src,name,prayer,id,o={}){const g=groups[nextG()],W=Math.max(innerWidth*g.w/100,72),k=document.createElement('div'),d=g.d*rnd(.85,1.2);k.className='k';k._n=name;k._p=prayer;k._z=g.z;k._kind='krathong';
-k.style.cssText=`bottom:${g.b+rnd(-.5,.5)}%;width:${W}px;z-index:${g.z};animation-duration:${d}s;animation-delay:-${o.fresh?d*.22:rnd(0,d)}s`;
+k.style.cssText=`bottom:${g.b+rnd(-.3,.3)}%;width:${W}px;z-index:${g.z};animation-duration:${d}s;animation-delay:-${o.fresh?d*.22:rnd(0,d)}s`;
 k.innerHTML=`<div class="bub"></div><div class="b" style="animation-duration:${rnd(3.2,5)}s;animation-delay:-${rnd(0,4)}s"><img alt=""><div class="g"${o.preset?' style="left:51%;top:14%"':''}></div></div>`;
 k.querySelector('img').src=src;
 k.onclick=()=>tap(k,id);document.body.appendChild(k);return k}
