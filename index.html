@@ -5,11 +5,12 @@
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@400;600&display=swap" rel="stylesheet">
 <style>
 :root{color-scheme:dark;--ink:#fff;box-sizing:border-box}
-html,body{margin:0;height:100%;overflow:hidden;background:#0b1030;font-family:'Noto Sans Thai',system-ui,sans-serif;color:var(--ink)}
+html{height:100%;overflow:hidden;overscroll-behavior:none}
+body{position:fixed;inset:0;width:100%;height:100%;margin:0;overflow:hidden;overscroll-behavior:none;touch-action:manipulation;background:#0b1030;font-family:'Noto Sans Thai',system-ui,sans-serif;color:var(--ink)}
 #sky{position:absolute;inset:0;background:linear-gradient(#070a22,#1b1f5a 55%,#3a3a86)}
 #dusk{position:absolute;inset:0;background:linear-gradient(#0c1a4c 0%,#21418f 40%,#7a5590 58%,#d9774a 70%,#ffb062 82%,#ffd08a 100%);opacity:0;animation:dusk 70s ease-in-out infinite alternate}@keyframes dusk{0%,12%{opacity:0}88%,100%{opacity:1}}
-.scn{position:absolute;left:0;width:100%;overflow:hidden;pointer-events:none;z-index:1}.scn.far{bottom:28%;height:20vh;opacity:.92}.scn.near{bottom:25.5%;height:25vh}
-.scn .tr{display:flex;height:100%;width:max-content;animation:slide3 linear infinite}.scn.far .tr{animation-duration:220s}.scn.near .tr{animation-duration:150s}@keyframes slide3{to{transform:translateX(-33.3333%)}}
+.scn{position:absolute;left:0;width:100%;overflow:hidden;pointer-events:none;z-index:1}.scn.far{bottom:28%;height:20vh;height:20svh;opacity:.92}.scn.near{bottom:25.5%;height:25vh;height:25svh}
+.scn .tr{display:flex;height:100%;width:max-content;animation:slide2 linear infinite;will-change:transform;backface-visibility:hidden}.scn.far .tr{animation-duration:220s}.scn.near .tr{animation-duration:150s}@keyframes slide2{from{transform:translate3d(0,0,0)}to{transform:translate3d(-50%,0,0)}}
 .scn svg{height:100%;width:auto;flex:none;display:block}
 .scn .tw{animation:tw 2.2s ease-in-out infinite}.win{animation:win 5s ease-in-out infinite alternate}@keyframes win{to{opacity:.5}}
 .spk{transform-box:fill-box;transform-origin:center;animation:spk .4s linear infinite}@keyframes spk{50%{transform:rotate(45deg) scale(1.4);opacity:.55}}
@@ -135,14 +136,15 @@ const near=[ground(2400),palm(70,130),house(110),person(265,1,{lan:1}),person(28
  person(1700,1,{lan:1}),person(1722,.68,{lan:1,dress:1}),house(1780),palm(1955,112),
  stall(2010,110,{pots:1}),person(2150,1),person(2172,.95,{dress:1}),tree(2250,38),person(2330,1,{lan:1})].join('');
 // far layer: hills, distant temples (with a hilltop chedi), village lights
-C='#1a2361';let hp=`M0,${G}`;for(let x=0;x<=1800;x+=20)hp+=` L${x},${(G-38-26*Math.sin(x/1800*6.2832*2)-12*Math.sin(x/1800*6.2832*5)).toFixed(1)}`;
-let far=`<path d="${hp} L1800,${G}Z"/>`;
-const hillY=x=>G-38-26*Math.sin(x/1800*6.2832*2)-12*Math.sin(x/1800*6.2832*5);
+C='#1a2361';let hp=`M0,${G}`;const hillY=x=>G-38-26*Math.sin(x/1800*6.2832*2)-12*Math.sin(x/1800*6.2832*5);for(let x=0;x<=3600;x+=20)hp+=` L${x},${hillY(x).toFixed(1)}`;
+let far=`<path d="${hp} L3600,${G}Z"/>`;
 far+=`<g transform="translate(0,${(hillY(225)-G+4).toFixed(1)})">${chedi(225,110)}</g>`;
 far+=sc(520,.62,temple(420))+sc(700,.6,chedi(700,170))+sc(900,.7,tree(900,40))+sc(960,.6,tree(960,40))+sc(1250,.55,house(1200))+sc(1400,.62,temple(1340))+sc(1600,.6,chedi(1600))+sc(1700,.7,tree(1700,36))+sc(120,.7,tree(120,38));
-for(let i=0;i<46;i++){const x=(i*397)%1800,y=hillY(x)+10+((i*53)%28);if(y<G-2)far+=`<circle class="tw" ${twk(i)} cx="${x}" cy="${y.toFixed(1)}" r="1.6" fill="#ffd27a"/>`}
-const mk=(cls,W,body,fill,n)=>{const d=document.createElement('div');d.className='scn '+cls;let t='';for(let i=0;i<n;i++)t+=`<svg viewBox="0 0 ${W} 232" preserveAspectRatio="xMidYMax meet" style="aspect-ratio:${W}/232" fill="${fill}" aria-hidden="true">${body}</svg>`;d.innerHTML=`<div class="tr">${t}</div>`;document.body.appendChild(d)};
-mk('far',1800,far,'#1a2361',3);mk('near',2400,near,'#070b24',3);}
+far+=sc(2100,.6,chedi(2100,150))+sc(2420,.62,temple(2320))+sc(2700,.7,tree(2700,40))+sc(2760,.6,tree(2760,40))+sc(3050,.55,house(3000))+sc(3300,.6,chedi(3300,160))+sc(3480,.7,tree(3480,38));
+for(let i=0;i<80;i++){const x=(i*397)%3600,y=hillY(x)+10+((i*53)%28);if(y<G-2)far+=`<circle class="tw" ${twk(i)} cx="${x}" cy="${y.toFixed(1)}" r="1.6" fill="#ffd27a"/>`}
+const still=s=>s.replace(/<animateTransform[^>]*\/>/g,'').replace(/ class="(tw|win|spk|hb)"/g,'');
+const mk=(cls,W,body,fill,n)=>{body=still(body);const d=document.createElement('div');d.className='scn '+cls;let t='';for(let i=0;i<n;i++)t+=`<svg viewBox="0 0 ${W} 232" preserveAspectRatio="xMidYMax meet" style="aspect-ratio:${W}/232" fill="${fill}" aria-hidden="true">${body}</svg>`;d.innerHTML=`<div class="tr">${t}</div>`;document.body.appendChild(d)};
+mk('far',3600,far,'#1a2361',2);mk('near',2400,near,'#070b24',2);}
 
 {const m=document.createElement('div');m.className='moon';m.innerHTML='<img alt="">';m.firstChild.src=MOON;sky.appendChild(m)}
 [[36,0],[53,-2],[69,-3.5]].forEach(([x,d],i)=>{const h=document.createElement('div');h.className='hl';h.style.cssText=`left:${x}%;animation-delay:${d}s;animation-duration:${4.6+i*.7}s`;h.innerHTML='<i></i><img alt="">';h.lastChild.src=LS[i];document.body.appendChild(h)});
