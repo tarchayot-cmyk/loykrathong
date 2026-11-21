@@ -220,8 +220,8 @@ function textPoints(text){const W=drone.W,H=drone.H,bw=W*.9,cy=H*(W<700?.47:.48)
   if(lines.length===1){const minFs=Math.max(22,Math.min(34,H*.04));let f=fs;g.font=font(f);while(g.measureText(text).width>bw&&f>minFs){f*=.94;g.font=font(f)}
     if(g.measureText(text).width<=bw)fs=f;else lines=splitLine(text);g.font=font(fs)}
   const widest=()=>Math.max(...lines.map(l=>g.measureText(l).width));while(widest()>bw&&fs>14){fs*=.92;g.font=font(fs)}
-  const lh=fs*1.35;o.width=W;o.height=Math.ceil(lh*lines.length+fs);g.font=font(fs);g.fillStyle='#fff';g.textAlign='center';g.textBaseline='middle';
-  lines.forEach((l,i)=>g.fillText(l,W/2,fs*.6+lh*(i+.5)));
+  const lh=fs*1.35;o.width=W;o.height=Math.ceil(lh*lines.length+fs);g.font=font(fs);g.fillStyle='#fff';g.textAlign='left';g.textBaseline='middle';
+  lines.forEach((l,i)=>g.fillText(l,Math.max(0,(W-g.measureText(l).width)/2),fs*.6+lh*(i+.5)));   /* centre by measuring (iPad Safari ignored textAlign here) */
   const d=g.getImageData(0,0,o.width,o.height).data,top=cy-o.height/2;let step=Math.max(3,Math.round(fs/12)),pts;
   do{pts=[];for(let y=0;y<o.height;y+=step)for(let x=0;x<o.width;x+=step)if(d[(y*o.width+x)*4+3]>140)pts.push([x,y+top]);step++}while(pts.length>1300);
   drone.r=(step-1)*1.25;return pts}
