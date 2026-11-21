@@ -192,18 +192,19 @@ l.innerHTML=`<div class="sw" style="animation-duration:${rnd(3.5,5.5)}s"><img al
 l.querySelector('img').src=src;
 l.onclick=()=>tap(l,id);if(id)l.addEventListener('animationiteration',e=>{if(e.target===l)rotate(l,id)});document.body.appendChild(l);return l}
 demos=[IMG,...KS].map(s=>addK(s,'',''));
-function put(v,mode){if(!v||els[v.id])return null;const kind=v.kind==='lantern'?'lantern':'krathong',o2={fresh:mode===true,enter:mode==='enter'};
+function put(v,mode){if(!v||els[v.id])return null;keep(v);const kind=v.kind==='lantern'?'lantern':'krathong',o2={fresh:mode===true,enter:mode==='enter'};
   const el=kind==='lantern'?addL(srcOf(v),v.name,v.prayer,v.id,o2):addK(srcOf(v),v.name,v.prayer,v.id,o2);
   els[v.id]=el;const o=orders[kind];o.push(v.id);if(kind==='krathong'&&demos.length)demos.pop().remove();
   while(o.length>MAX[kind]){const x=o.shift();if(els[x]){els[x].remove();delete els[x]}}return el}
 /* everyone gets a turn: all items stay in a pool; at most MAX are on screen, and each time one floats off screen it is swapped for the next one not shown */
-const pool={krathong:[],lantern:[]},ptr={krathong:0,lantern:0};
+const pool={krathong:[],lantern:[]},ptr={krathong:0,lantern:0},cache=new Map();   /* rows already downloaded are kept, so each picture is fetched once per visit */
+const keep=v=>{if(!v)return;cache.delete(v.id);cache.set(v.id,v);if(cache.size>400)cache.delete(cache.keys().next().value)};
 function unshow(id){const el=els[id];if(!el)return;el.remove();delete els[id];const o=orders[el._kind],i=o.indexOf(id);if(i>=0)o.splice(i,1)}
 async function rotate(el,id){const kind=el._kind,P=pool[kind];if(el._busy||!sb||P.length<=orders[kind].length)return;el._busy=1;
   let nid=null;for(let n=0;n<P.length;n++){ptr[kind]=(ptr[kind]+1)%P.length;if(!els[P[ptr[kind]]]){nid=P[ptr[kind]];break}}
-  try{if(nid){const {data}=await sb.from('krathongs').select(COLS).eq('id',nid).maybeSingle();if(data&&!els[nid]&&els[id]){unshow(id);put(data,'enter');return}}}catch(e){}
+  try{if(nid){let data=cache.get(nid);if(!data){data=(await sb.from('krathongs').select(COLS).eq('id',nid).maybeSingle()).data;keep(data)}if(data&&!els[nid]&&els[id]){unshow(id);put(data,'enter');return}}}catch(e){}
   el._busy=0}
-function drop(id){for(const k in pool){const i=pool[k].indexOf(id);if(i>=0)pool[k].splice(i,1)}const el=els[id];if(el){el.remove();delete els[id];const o=orders[el._kind],i=o.indexOf(id);if(i>=0)o.splice(i,1)}document.querySelector(`.row[data-id="${id}"]`)?.remove();refreshCount()}
+function drop(id){cache.delete(id);for(const k in pool){const i=pool[k].indexOf(id);if(i>=0)pool[k].splice(i,1)}const el=els[id];if(el){el.remove();delete els[id];const o=orders[el._kind],i=o.indexOf(id);if(i>=0)o.splice(i,1)}document.querySelector(`.row[data-id="${id}"]`)?.remove();refreshCount()}
 async function refreshCount(){for(const k of ['krathong','lantern']){const {count}=await sb.from('krathongs').select('id',{count:'exact',head:true}).eq('kind',k);if(count!=null)cnt[k]=count}setCnt()}
 async function delK(id){const {data,error}=await sb.rpc('delete_krathong',{p_id:id,p_key:myKeys[id]});if(error)return alert('ลบไม่สำเร็จ ลองใหม่อีกครั้ง');delete myKeys[id];saveKeys();if(data)drop(id)}
 const COLS='id,kind,name,prayer,img,preset';
