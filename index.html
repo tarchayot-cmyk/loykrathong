@@ -204,10 +204,11 @@ function droneStart(i){if(!drone.msgs.length){drone.phase='idle';return}drone.id
   const pts=textPoints(drone.msgs[drone.idx].text),L=drone.list;
   while(L.length<pts.length){const [x,y]=[rnd(0,drone.W),drone.H*rnd(.62,.7)];L.push({x,y,sx:x,sy:y,tx:x,ty:y,a:0,sa:0,ta:0,d:0,tw:rnd(0,6.28)})}
   pts.sort(()=>Math.random()-.5);
-  L.forEach((p,k)=>{p.sx=p.x;p.sy=p.y;p.sa=p.a;p.d=rnd(0,.5);if(k<pts.length){[p.tx,p.ty]=pts[k];p.ta=1}else{[p.tx,p.ty]=scatterPos();p.ta=0}});
+  L.forEach((p,k)=>{p.x=rnd(.1,.9)*drone.W;p.y=drone.H*rnd(.6,.68);p.a=0;p.sx=p.x;p.sy=p.y;p.sa=0;p.d=rnd(0,.5);if(k<pts.length){[p.tx,p.ty]=pts[k];p.ta=1}else{[p.tx,p.ty]=scatterPos();p.ta=0}});
   drone.col=['#ffffff','#9be7ff','#ffd27a','#ffa6d6','#c3b5ff','#8affc1'][drone.idx%6];drone.phase='form';drone.t=0}
-function droneScatter(){drone.list.forEach(p=>{p.sx=p.x;p.sy=p.y;p.sa=p.a;p.d=rnd(0,.4);[p.tx,p.ty]=scatterPos();p.ta=.28});drone.phase='scatter';drone.t=0}
-const DUR={form:3.2,hold:7,scatter:2.6,rest:1.8};
+function droneScatter(){const L=drone.list;if(!L.length)return;let cx=0,cy=0,n=0;L.forEach(p=>{if(p.a>.5){cx+=p.x;cy+=p.y;n++}});cx=n?cx/n:drone.W/2;cy=n?cy/n:drone.H/2;
+  L.forEach(p=>{p.sx=p.x;p.sy=p.y;p.sa=p.a;p.d=rnd(0,.25);const k=rnd(.5,1.1);p.tx=p.x+(p.x-cx)*k;p.ty=p.y+(p.y-cy)*k*1.6+rnd(10,60);p.ta=0});drone.phase='scatter';drone.t=0}
+const DUR={form:2.8,hold:4,scatter:1.8,rest:22};
 let dLast=performance.now();
 function droneFrame(now){const dt=Math.min(.1,(now-dLast)/1000);dLast=now;const {ctx,c,dpr}=drone;ctx.setTransform(dpr,0,0,dpr,0,0);ctx.clearRect(0,0,drone.W,drone.H);
   if(drone.phase!=='idle'){drone.t+=dt;const T=DUR[drone.phase];
