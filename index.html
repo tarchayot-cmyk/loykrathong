@@ -10,8 +10,8 @@ body{position:fixed;inset:0;width:100%;height:100%;margin:0;overflow:hidden;over
 #sky{position:absolute;inset:0;background:linear-gradient(#070a22,#1b1f5a 55%,#3a3a86)}
 #dusk{position:absolute;inset:0;background:linear-gradient(#0c1a4c 0%,#21418f 40%,#7a5590 58%,#d9774a 70%,#ffb062 82%,#ffd08a 100%);opacity:0;animation:dusk 70s ease-in-out infinite alternate}@keyframes dusk{0%,12%{opacity:0}88%,100%{opacity:1}}
 .scn{position:absolute;left:0;width:100%;overflow:hidden;pointer-events:none;z-index:1}.scn.far{bottom:28%;height:20vh;height:20svh;opacity:.92}.scn.near{bottom:25.5%;height:25vh;height:25svh}
-.scn .tr{display:flex;height:100%;width:max-content;animation:slide2 linear infinite;will-change:transform;backface-visibility:hidden}.scn.far .tr{animation-duration:220s}.scn.near .tr{animation-duration:150s}@keyframes slide2{from{transform:translate3d(0,0,0)}to{transform:translate3d(-50%,0,0)}}
-.scn svg{height:100%;width:auto;flex:none;display:block}
+.scn .tr{display:flex;height:100%;width:max-content;animation:slide2 linear infinite;will-change:transform;backface-visibility:hidden}.scn.far .tr{animation-duration:240s}.scn.near .tr{animation-duration:190s}@keyframes slide2{from{transform:translate3d(0,0,0)}to{transform:translate3d(-50%,0,0)}}
+.scn img{height:100%;width:auto;flex:none;display:block;user-select:none;-webkit-user-drag:none}.scn img.fl{transform:scaleX(-1)}
 .scn .tw{animation:tw 2.2s ease-in-out infinite}.win{animation:win 5s ease-in-out infinite alternate}@keyframes win{to{opacity:.5}}
 .spk{transform-box:fill-box;transform-origin:center;animation:spk .4s linear infinite}@keyframes spk{50%{transform:rotate(45deg) scale(1.4);opacity:.55}}
 .hb{animation:hb 2.4s ease-in-out infinite}@keyframes hb{50%{transform:translateY(-7px)}}
@@ -86,65 +86,9 @@ function burst(){const f=document.createElement('div'),h=rnd(0,360),c=`hsl(${h},
 setInterval(burst,1800);burst();setInterval(()=>{if(Math.random()<.5)setTimeout(burst,350)},1800);
 const waves=[[48,'#2a63b0',1.6,40,2],[38,'#4aa3dc',1.4,32,4],[28,'#86cdee',1.3,26,6],[18,'#b6e6f7',1.2,20,8]];
 waves.forEach(([h,c,amp,dur,z],n)=>{let d='M0,60';for(let x=0;x<=1200;x+=20)d+=` L${x},${(40+amp*3*Math.sin(x/600*6.283+n*1.3)).toFixed(1)}`;d+=' L1200,100 L0,100Z';const w=document.createElement('div');w.className='w';w.style.cssText=`height:${h}%;z-index:${z}`;w.innerHTML=`<svg viewBox="0 0 1200 100" preserveAspectRatio="none" style="animation-duration:${dur}s;animation-direction:${n%2?'reverse':'normal'}"><path d="${d}" fill="${c}"/></svg>`;document.body.appendChild(w)});
-/* ---------- drifting festival silhouettes ---------- */
-{const G=220;let C='#070b24';
-const twk=(i)=>`style="animation-delay:-${((i*0.37)%2).toFixed(2)}s"`;
-const glow=(x,y,r,c='#ffb347')=>`<circle cx="${x}" cy="${y}" r="${r*2.4}" fill="${c}" opacity=".28"/><circle class="tw" ${twk(x)} cx="${x}" cy="${y}" r="${r}" fill="${c}"/>`;
-function person(x,s=1,o={}){const y=G;let p=`<circle cx="${x}" cy="${y-38*s}" r="${5.5*s}"/>`;
- p+=o.dress?`<path d="M${x-6*s},${y-30*s}Q${x},${y-33*s} ${x+6*s},${y-30*s}L${x+10*s},${y-6*s}L${x+3*s},${y-6*s}L${x+3*s},${y}L${x+.5*s},${y}L${x},${y-6*s}L${x-.5*s},${y}L${x-3*s},${y}L${x-3*s},${y-6*s}L${x-10*s},${y-6*s}Z"/>`
- :`<path d="M${x-6*s},${y-30*s}Q${x},${y-33*s} ${x+6*s},${y-30*s}L${x+8*s},${y-13*s}L${x+4*s},${y-13*s}L${x+4*s},${y}L${x+.8*s},${y}L${x},${y-11*s}L${x-.8*s},${y}L${x-4*s},${y}L${x-4*s},${y-13*s}L${x-8*s},${y-13*s}Z"/>`;
- if(o.lan)p+=`<path d="M${x+5*s},${y-29*s}L${x+12*s},${y-43*s}" stroke="${C}" stroke-width="${2*s}"/>`+glow(x+12*s,y-48*s,4*s);
- if(o.spark)p+=`<path d="M${x+5*s},${y-29*s}L${x+13*s},${y-41*s}" stroke="${C}" stroke-width="${1.6*s}"/><g transform="translate(${x+13*s},${y-42*s})"><g class="spk"><path d="M-7,0L7,0M0,-7L0,7M-5,-5L5,5M-5,5L5,-5" stroke="#fff3b0" stroke-width="1.6"/></g></g>`;
- return p}
-function house(x){let s='';[0,36,72,108].forEach(d=>s+=`<rect x="${x+6+d}" y="${G-34}" width="5" height="34"/>`);
- return s+`<rect x="${x}" y="${G-80}" width="126" height="48"/><path d="M${x-16},${G-78}L${x+63},${G-138}L${x+142},${G-78}Z"/><path d="M${x+50},${G-148}L${x+63},${G-134}L${x+76},${G-148}" fill="none" stroke="${C}" stroke-width="4"/><rect class="win" x="${x+16}" y="${G-68}" width="20" height="18" fill="#ffcf6b"/><rect class="win" style="animation-delay:-3s" x="${x+88}" y="${G-68}" width="20" height="18" fill="#ffcf6b"/><rect x="${x-24}" y="${G-36}" width="40" height="5"/>`}
-function stall(x,w=110,o={}){let s=`<rect x="${x}" y="${G-88}" width="4" height="88"/><rect x="${x+w-4}" y="${G-88}" width="4" height="88"/><rect x="${x+4}" y="${G-80}" width="${w-8}" height="46" fill="#ffc861" opacity=".45"/>`;
- if(o.balloons)for(let i=0;i<10;i++)s+=`<circle cx="${x+14+(i%5)*((w-28)/4)}" cy="${G-70+Math.floor(i/5)*16}" r="5.5" fill="${['#ff6b6b','#ffd93d','#4cc9f0','#c77dff','#06d6a0'][(i*3)%5]}"/>`;
- s+=`<path d="M${x-10},${G-80}L${x+w/2},${G-106}L${x+w+10},${G-80}Z"/>`;for(let i=0;i<(w+20)/12;i++)s+=`<circle cx="${x-4+i*12}" cy="${G-80}" r="6"/>`;
- s+=`<rect x="${x}" y="${G-36}" width="${w}" height="36"/><circle cx="${x+w*.35}" cy="${G-50}" r="6"/><path d="M${x+w*.35-10},${G-35}Q${x+w*.35},${G-50} ${x+w*.35+10},${G-35}Z"/>`;
- if(o.pots)s+=`<path d="M${x+w*.6},${G-36}q0,-12 10,-12q10,0 10,12z"/><rect x="${x+w*.6+6}" y="${G-56}" width="2" height="8"/>`;
- for(let i=0;i<w/14;i++)s+=`<circle class="tw" ${twk(x+i)} cx="${x+7+i*14}" cy="${G-72}" r="2.2" fill="#ffe08a"/>`;return s}
-function curvePts(x1,x2,y,sag,n){const a=[];for(let i=1;i<n;i++){const t=i/n;a.push([x1+(x2-x1)*t,y+4*sag*t*(1-t)])}return a}
-function bunting(x1,x2,y,sag=12){const n=Math.floor((x2-x1)/16);let s=`<path d="M${x1},${y}Q${(x1+x2)/2},${y+sag*2} ${x2},${y}" fill="none" stroke="${C}" stroke-width="1.5"/>`;
- curvePts(x1,x2,y,sag,n).forEach(([px,py],i)=>s+=`<path d="M${px-5},${py}L${px+5},${py}L${px},${py+10}Z" fill="${['#ff7b7b','#ffd166','#06d6a0','#4cc9f0','#c77dff'][i%5]}" opacity=".85"/>`);return s}
-function lanterns(x1,x2,y,sag=10){const n=Math.floor((x2-x1)/26);let s=`<path d="M${x1},${y}Q${(x1+x2)/2},${y+sag*2} ${x2},${y}" fill="none" stroke="${C}" stroke-width="1.5"/>`;
- curvePts(x1,x2,y,sag,n).forEach(([px,py])=>s+=`<path d="M${px},${py}L${px},${py+5}" stroke="${C}"/>`+glow(px,py+10,4.5,'#ff9f43'));return s}
-function temple(x){const c=x+110;let s=`<rect x="${x}" y="${G-16}" width="220" height="16"/><rect x="${x+22}" y="${G-62}" width="176" height="48"/><path d="M${c-14},${G-16}L${c-14},${G-42}Q${c},${G-56} ${c+14},${G-42}L${c+14},${G-16}Z" fill="#ffc861" opacity=".8"/>`;
- [[54,G-34],[166,G-34]].forEach(([d,y])=>s+=`<rect x="${x+d-7}" y="${y}" width="14" height="14" fill="#ffc861" opacity=".6"/>`);
- const roof=(w,y0,h)=>`<path d="M${c-w},${y0}L${c},${y0-h}L${c+w},${y0}L${c+w-14},${y0+6}L${c-w+14},${y0+6}Z"/><path d="M${c-w},${y0}q-9,-3 -7,-15" fill="none" stroke="${C}" stroke-width="3"/><path d="M${c+w},${y0}q9,-3 7,-15" fill="none" stroke="${C}" stroke-width="3"/>`;
- return s+roof(120,G-58,52)+roof(88,G-92,48)+roof(56,G-128,44)+`<path d="M${c},${G-172}q7,-10 2,-22" fill="none" stroke="${C}" stroke-width="3"/>`}
-function chedi(x,h=170){const k=h/170;return `<rect x="${x-40*k}" y="${G-14*k}" width="${80*k}" height="${14*k}"/><rect x="${x-32*k}" y="${G-26*k}" width="${64*k}" height="${13*k}"/><rect x="${x-25*k}" y="${G-36*k}" width="${50*k}" height="${11*k}"/><path d="M${x-24*k},${G-35*k}Q${x-24*k},${G-86*k} ${x},${G-96*k}Q${x+24*k},${G-86*k} ${x+24*k},${G-35*k}Z"/><path d="M${x-5*k},${G-94*k}L${x},${G-h}L${x+5*k},${G-94*k}Z"/>`+glow(x,G-h,2.2,'#ffe08a')}
-function wheel(x,r=72){const cy=G-r-24,cl=['#ff6b6b','#ffd93d','#6bcbff','#c77dff'];let s=`<path d="M${x-46},${G}L${x},${cy}L${x+46},${G}" fill="none" stroke="${C}" stroke-width="6"/><g><animateTransform attributeName="transform" type="rotate" from="0 ${x} ${cy}" to="360 ${x} ${cy}" dur="45s" repeatCount="indefinite"/><circle cx="${x}" cy="${cy}" r="${r}" fill="none" stroke="${C}" stroke-width="4"/>`;
- for(let i=0;i<12;i++){const a=i*Math.PI/6,px=x+r*Math.cos(a),py=cy+r*Math.sin(a);s+=`<line x1="${x}" y1="${cy}" x2="${px}" y2="${py}" stroke="${C}" stroke-width="2"/><circle cx="${px}" cy="${py}" r="7"/><circle class="tw" ${twk(i)} cx="${px}" cy="${py}" r="2.6" fill="${cl[i%4]}"/>`}
- return s+`</g><circle cx="${x}" cy="${cy}" r="7"/>`}
-function carousel(x){const c=x+60;let s=`<path d="M${x-8},${G-90}L${c},${G-132}L${x+128},${G-90}Z"/><rect x="${x-2}" y="${G-93}" width="124" height="9"/><rect x="${x-6}" y="${G-12}" width="132" height="12"/>`;
- [12,42,78,108].forEach((d,i)=>s+=`<rect x="${x+d-1.5}" y="${G-84}" width="3" height="72"/><g class="hb" style="animation-delay:-${i*.6}s"><path d="M${x+d-13},${G-46}h22l4,-6v14h-26z"/><path d="M${x+d-10},${G-36}v10M${x+d+6},${G-36}v10" stroke="${C}" stroke-width="3"/></g>`);
- for(let i=0;i<9;i++)s+=`<circle class="tw" ${twk(i)} cx="${x+i*15}" cy="${G-88}" r="2.2" fill="#ffe08a"/>`;return s+glow(c,G-135,3,'#ffe08a')}
-function palm(x,h=120){const tx=x+4,ty=G-h;let s=`<path d="M${x},${G}Q${x+10},${G-h/2} ${tx},${ty}" fill="none" stroke="${C}" stroke-width="7"/>`;
- [[-50,10],[-32,-14],[0,-22],[32,-14],[50,10],[-58,30],[58,30]].forEach(([dx,dy])=>s+=`<path d="M${tx},${ty}Q${tx+dx*.5},${ty+dy-14} ${tx+dx},${ty+dy}Q${tx+dx*.5},${ty+dy-4} ${tx},${ty}Z"/>`);return s}
-function tree(x,r=40){return `<rect x="${x-4}" y="${G-50}" width="8" height="50"/><circle cx="${x}" cy="${G-60-r*.4}" r="${r}"/><circle cx="${x-r*.7}" cy="${G-52}" r="${r*.7}"/><circle cx="${x+r*.7}" cy="${G-54}" r="${r*.75}"/>`}
-const sc=(x,k,s)=>`<g transform="translate(${x},${G}) scale(${k}) translate(${-x},${-G})">${s}</g>`;
-const ground=W=>`<rect x="0" y="${G}" width="${W}" height="12"/>`;
-// near layer: village, market, temple, fair
-C='#070b24';
-const near=[ground(2400),palm(70,130),house(110),person(265,1,{lan:1}),person(287,.68,{dress:1}),
- stall(330,110,{pots:1}),stall(458,100,{balloons:1}),bunting(320,570,G-112),person(445,.95,{dress:1}),person(575,1),
- wheel(690),person(615,.7,{spark:1}),person(780,1,{spark:1}),person(800,.68,{spark:1,dress:1}),
- lanterns(830,1070,G-150,8),temple(840),person(930,1,{lan:1}),person(1000,.95,{dress:1,lan:1}),
- chedi(1120,175),tree(1195,34),carousel(1262),person(1245,1),person(1405,.95,{dress:1,lan:1}),
- stall(1445,110),stall(1570,100,{balloons:1}),bunting(1435,1680,G-112),person(1550,.68,{spark:1}),
- person(1700,1,{lan:1}),person(1722,.68,{lan:1,dress:1}),house(1780),palm(1955,112),
- stall(2010,110,{pots:1}),person(2150,1),person(2172,.95,{dress:1}),tree(2250,38),person(2330,1,{lan:1})].join('');
-// far layer: hills, distant temples (with a hilltop chedi), village lights
-C='#1a2361';let hp=`M0,${G}`;const hillY=x=>G-38-26*Math.sin(x/1800*6.2832*2)-12*Math.sin(x/1800*6.2832*5);for(let x=0;x<=3600;x+=20)hp+=` L${x},${hillY(x).toFixed(1)}`;
-let far=`<path d="${hp} L3600,${G}Z"/>`;
-far+=`<g transform="translate(0,${(hillY(225)-G+4).toFixed(1)})">${chedi(225,110)}</g>`;
-far+=sc(520,.62,temple(420))+sc(700,.6,chedi(700,170))+sc(900,.7,tree(900,40))+sc(960,.6,tree(960,40))+sc(1250,.55,house(1200))+sc(1400,.62,temple(1340))+sc(1600,.6,chedi(1600))+sc(1700,.7,tree(1700,36))+sc(120,.7,tree(120,38));
-far+=sc(2100,.6,chedi(2100,150))+sc(2420,.62,temple(2320))+sc(2700,.7,tree(2700,40))+sc(2760,.6,tree(2760,40))+sc(3050,.55,house(3000))+sc(3300,.6,chedi(3300,160))+sc(3480,.7,tree(3480,38));
-for(let i=0;i<80;i++){const x=(i*397)%3600,y=hillY(x)+10+((i*53)%28);if(y<G-2)far+=`<circle class="tw" ${twk(i)} cx="${x}" cy="${y.toFixed(1)}" r="1.6" fill="#ffd27a"/>`}
-const still=s=>s.replace(/<animateTransform[^>]*\/>/g,'').replace(/ class="(tw|win|spk|hb)"/g,'');
-const mk=(cls,W,body,fill,n)=>{body=still(body);const d=document.createElement('div');d.className='scn '+cls;let t='';for(let i=0;i<n;i++)t+=`<svg viewBox="0 0 ${W} 232" preserveAspectRatio="xMidYMax meet" style="aspect-ratio:${W}/232" fill="${fill}" aria-hidden="true">${body}</svg>`;d.innerHTML=`<div class="tr">${t}</div>`;document.body.appendChild(d)};
-mk('far',3600,far,'#1a2361',2);mk('near',2400,near,'#070b24',2);}
+/* ---------- drifting festival silhouettes (images in /bg) ---------- */
+{const mk=(cls,src,n,flip)=>{const d=document.createElement('div');d.className='scn '+cls;let h='';for(let i=0;i<n;i++)h+=`<img src="${src}" alt="" draggable="false"${flip&&i%2?' class="fl"':''}>`;d.innerHTML=`<div class="tr">${h}</div>`;document.body.appendChild(d)};
+mk('far','bg/far.webp',4,true);mk('near','bg/near.webp',2,false)}
 
 {const m=document.createElement('div');m.className='moon';m.innerHTML='<img alt="">';m.firstChild.src=MOON;sky.appendChild(m)}
 [[36,0],[53,-2],[69,-3.5]].forEach(([x,d],i)=>{const h=document.createElement('div');h.className='hl';h.style.cssText=`left:${x}%;animation-delay:${d}s;animation-duration:${4.6+i*.7}s`;h.innerHTML='<i></i><img alt="">';h.lastChild.src=LS[i];document.body.appendChild(h)});
