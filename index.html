@@ -296,7 +296,8 @@ function fishFrame(now){const dt=Math.min(.05,(now-fLast)/1000);fLast=now;
         if(!f.out&&py>sY&&f.y<=sY){f.out=1;splash(ly,f.x,sY,0)}
         if(f.out&&py<sY&&f.y>=sY){f.out=2;splash(ly,f.x,sY,1)}
         if(f.vy>0&&f.y>=f.depth){f.st='swim';f.y=f.depth;f.wait=rnd(8,24);if(Math.random()<.3)f.dir*=-1}}
-      c.save();c.translate(f.x,f.y);c.scale(f.dir,1);c.rotate(f.ang);c.globalAlpha=f.y>sY+2?.78:1;drawFish(c,f.t,f.L,Math.sin(f.ph));c.restore()}
+      if(f.st!=='jump'||f.y-f.L*.5>sY)continue;   /* swimming fish stay hidden under the wave; only the part above the surface shows */
+      c.save();c.beginPath();c.rect(0,0,W,sY);c.clip();c.translate(f.x,f.y);c.scale(f.dir,1);c.rotate(f.ang);drawFish(c,f.t,f.L,Math.sin(f.ph));c.restore()}
     for(let i=ly.fx.length-1;i>=0;i--){const e=ly.fx[i];e.age+=dt;if(e.age>=e.life){ly.fx.splice(i,1);continue}const a=1-e.age/e.life;
       if(e.k==='ring'){c.strokeStyle=`rgba(255,255,255,${a*.8})`;c.lineWidth=1.6;c.beginPath();c.ellipse(e.x,e.y,(8+e.age*40)*e.s,(2.5+e.age*8)*e.s,0,0,6.3);c.stroke();
         c.beginPath();c.ellipse(e.x,e.y,(3+e.age*22)*e.s,(1+e.age*4)*e.s,0,0,6.3);c.stroke()}
