@@ -173,10 +173,17 @@ function tap(el,id){const what=NAME[el._kind]||'กระทง';
   if(adminPass&&id){if(confirm(`[แอดมิน] ลบ${what}ของ "${el._n||'ไม่ระบุชื่อ'}"?\n${el._p||''}`))adminDel(id);return}
   if(id&&myKeys[id]&&confirm(`${what}ของคุณ${el._p?': '+el._p:''}\n\nต้องการลบ${what}นี้ไหม?`))return delK(id);
   show(el)}
+/* put the candle glow on the drawn flame: look for a small orange/red patch near the top; no match -> no glow */
+function placeGlow(im,gl){try{const w=64,h=Math.max(1,Math.round(64*im.naturalHeight/im.naturalWidth)),c=document.createElement('canvas');c.width=w;c.height=h;const x=c.getContext('2d');x.drawImage(im,0,0,w,h);
+  const d=x.getImageData(0,0,w,h).data,lim=Math.floor(h*.25);let pts=[];
+  for(let y=0;y<lim;y++)for(let i=0;i<w;i++){const k=(y*w+i)*4,r=d[k],g=d[k+1],b=d[k+2];if(d[k+3]>200&&r>190&&g>80&&g<215&&b<110&&r-b>120)pts.push([i,y])}
+  if(pts.length<2)return;const top=Math.min(...pts.map(p=>p[1]));pts=pts.filter(p=>p[1]<=top+h*.12);
+  const cx=pts.reduce((s,p)=>s+p[0],0)/pts.length/w,cy=pts.reduce((s,p)=>s+p[1],0)/pts.length/h,gh=16*w/h;
+  gl.style.left=(cx*100-8)+'%';gl.style.top=(cy*100-gh/2)+'%';gl.style.display=''}catch(e){}}
 function addK(src,name,prayer,id,o={}){const g=groups[nextG()],W=Math.max(innerWidth*g.w/100,72),k=document.createElement('div'),d=g.d*rnd(.85,1.2);k.className='k';k._n=name;k._p=prayer;k._z=g.z;k._kind='krathong';
 k.style.cssText=`bottom:${g.b+rnd(-.3,.3)}%;width:${W}px;z-index:${g.z};animation-duration:${d}s;animation-delay:-${o.fresh?d*.22:rnd(0,d)}s`;
 k.innerHTML=`<div class="bub"></div><div class="b" style="animation-duration:${rnd(3.2,5)}s;animation-delay:-${rnd(0,4)}s"><img alt=""><div class="g"${o.preset?' style="left:51%;top:14%"':''}></div></div>`;
-k.querySelector('img').src=src;
+const im=k.querySelector('img'),gl=k.querySelector('.g');if(!o.preset){gl.style.display='none';im.onload=()=>placeGlow(im,gl)}im.src=src;
 k.onclick=()=>tap(k,id);document.body.appendChild(k);return k}
 function addL(src,name,prayer,id,o={}){const l=document.createElement('div'),d=rnd(45,70);l.className='ul';l._n=name;l._p=prayer;l._z=1;l._kind='lantern';
 l.style.cssText=`left:${rnd(3,86)}%;animation-duration:${d}s;animation-delay:-${o.fresh?d*.1:rnd(0,d)}s`;
