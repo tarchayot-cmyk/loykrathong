@@ -9,7 +9,7 @@ html{height:100%;overflow:hidden;overscroll-behavior:none}
 body{position:fixed;inset:0;width:100%;height:100%;margin:0;overflow:hidden;overscroll-behavior:none;touch-action:manipulation;background:#0b1030;font-family:'Noto Sans Thai',system-ui,sans-serif;color:var(--ink)}
 #sky{position:absolute;inset:0;background:linear-gradient(#070a22,#1b1f5a 55%,#3a3a86)}
 #dusk{position:absolute;inset:0;background:linear-gradient(#0c1a4c 0%,#21418f 40%,#7a5590 58%,#d9774a 70%,#ffb062 82%,#ffd08a 100%);opacity:0;animation:dusk 70s ease-in-out infinite alternate}@keyframes dusk{0%,12%{opacity:0}88%,100%{opacity:1}}
-.scn{position:absolute;left:0;width:100%;overflow:hidden;pointer-events:none;z-index:1}.scn.far{bottom:28%;height:20vh;height:20svh;opacity:.92}.scn.near{bottom:25.5%;height:25vh;height:25svh}
+.scn{position:absolute;left:0;width:100%;overflow:hidden;pointer-events:none;z-index:1}.scn{display:block}.scn.far{bottom:25.5%;height:22vh;height:22svh;opacity:.92}.scn.near{bottom:24.5%;height:27vh;height:27svh}
 .scn .tr{display:flex;height:100%;width:max-content;animation:slide2 linear infinite;will-change:transform;backface-visibility:hidden}.scn.far .tr{animation-duration:240s}.scn.near .tr{animation-duration:190s}@keyframes slide2{from{transform:translate3d(0,0,0)}to{transform:translate3d(-50%,0,0)}}
 .scn img{height:100%;width:auto;flex:none;display:block;user-select:none;-webkit-user-drag:none}.scn img.fl{transform:scaleX(-1)}
 .scn .tw{animation:tw 2.2s ease-in-out infinite}.win{animation:win 5s ease-in-out infinite alternate}@keyframes win{to{opacity:.5}}
@@ -86,9 +86,22 @@ function burst(){const f=document.createElement('div'),h=rnd(0,360),c=`hsl(${h},
 setInterval(burst,1800);burst();setInterval(()=>{if(Math.random()<.5)setTimeout(burst,350)},1800);
 const waves=[[48,'#2a63b0',1.6,40,2],[38,'#4aa3dc',1.4,32,4],[28,'#86cdee',1.3,26,6],[18,'#b6e6f7',1.2,20,8]];
 waves.forEach(([h,c,amp,dur,z],n)=>{let d='M0,60';for(let x=0;x<=1200;x+=20)d+=` L${x},${(40+amp*3*Math.sin(x/600*6.283+n*1.3)).toFixed(1)}`;d+=' L1200,100 L0,100Z';const w=document.createElement('div');w.className='w';w.style.cssText=`height:${h}%;z-index:${z}`;w.innerHTML=`<svg viewBox="0 0 1200 100" preserveAspectRatio="none" style="animation-duration:${dur}s;animation-direction:${n%2?'reverse':'normal'}"><path d="${d}" fill="${c}"/></svg>`;document.body.appendChild(w)});
-/* ---------- drifting festival silhouettes (images in /bg) ---------- */
-{const mk=(cls,src,n,flip)=>{const d=document.createElement('div');d.className='scn '+cls;let h='';for(let i=0;i<n;i++)h+=`<img src="${src}" alt="" draggable="false"${flip&&i%2?' class="fl"':''}>`;d.innerHTML=`<div class="tr">${h}</div>`;document.body.appendChild(d)};
-mk('far','bg/far.webp',4,true);mk('near','bg/near.webp',2,false)}
+/* ---------- drifting festival silhouettes: drawn on small canvases (iPhone drops very wide moving layers) ---------- */
+{const layers=[];let rz;
+[{cls:'far',src:'bg/far.webp',mirror:true,dur:240},{cls:'near',src:'bg/near.webp',mirror:false,dur:190}].forEach(o=>{
+  const c=document.createElement('canvas');c.className='scn '+o.cls;document.body.appendChild(c);
+  const ly={...o,c,ctx:c.getContext('2d'),im:new Image(),tile:null,off:0};layers.push(ly);ly.im.onload=()=>size(ly);ly.im.src=o.src});
+function size(ly){const im=ly.im;if(!im.naturalWidth)return;const dpr=Math.min(devicePixelRatio||1,2),r=ly.c.getBoundingClientRect();
+  ly.c.width=Math.max(1,Math.round(r.width*dpr));ly.c.height=Math.max(1,Math.round(r.height*dpr));
+  const h=ly.c.height,w=Math.round(im.naturalWidth*h/im.naturalHeight),t=document.createElement('canvas');t.width=ly.mirror?w*2:w;t.height=h;
+  const g=t.getContext('2d');g.drawImage(im,0,0,w,h);if(ly.mirror){g.translate(w*2,0);g.scale(-1,1);g.drawImage(im,0,0,w,h)}
+  const old=ly.tile;ly.tile=t;ly.speed=t.width/ly.dur;if(old)ly.off=ly.off/old.width*t.width}
+let last=performance.now();
+function frame(now){const dt=Math.min(.1,(now-last)/1000);last=now;
+  for(const ly of layers){if(!ly.tile)continue;const {ctx,c,tile}=ly;ly.off=(ly.off+ly.speed*dt)%tile.width;ctx.clearRect(0,0,c.width,c.height);for(let x=-ly.off;x<c.width;x+=tile.width)ctx.drawImage(tile,x,0)}
+  requestAnimationFrame(frame)}
+requestAnimationFrame(frame);
+addEventListener('resize',()=>{clearTimeout(rz);rz=setTimeout(()=>layers.forEach(size),200)})}
 
 {const m=document.createElement('div');m.className='moon';m.innerHTML='<img alt="">';m.firstChild.src=MOON;sky.appendChild(m)}
 [[36,0],[53,-2],[69,-3.5]].forEach(([x,d],i)=>{const h=document.createElement('div');h.className='hl';h.style.cssText=`left:${x}%;animation-delay:${d}s;animation-duration:${4.6+i*.7}s`;h.innerHTML='<i></i><img alt="">';h.lastChild.src=LS[i];document.body.appendChild(h)});
