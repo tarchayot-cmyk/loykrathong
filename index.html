@@ -90,7 +90,7 @@ function sfxInit(){if(sfx.ctx)return;const A=window.AudioContext||window.webkitA
   sfx.master=c.createGain();sfx.master.gain.value=.9;sfx.master.connect(c.destination);
   const n=c.createBuffer(1,c.sampleRate*2,c.sampleRate),d=n.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=Math.random()*2-1;sfx.noise=n;
   const au=new Audio('bg/music.mp3');au.loop=true;au.preload='auto';au.crossOrigin='anonymous';sfx.au=au;
-  try{const src=c.createMediaElementSource(au),g=c.createGain();g.gain.value=.22;src.connect(g);g.connect(sfx.master);sfx.music=g}catch(e){au.volume=.22}}
+  try{const src=c.createMediaElementSource(au),g=c.createGain();g.gain.value=.13;src.connect(g);g.connect(sfx.master);sfx.music=g}catch(e){au.volume=.13}}
 function sfxSet(on){sfx.on=on;try{localStorage.setItem('lk_mute',on?'0':'1')}catch(e){}$('#snd').textContent=on?'🔊':'🔇';
   if(on){sfxInit();if(!sfx.ctx)return;sfx.ctx.resume();sfx.au.play().catch(()=>{})}else if(sfx.ctx){sfx.au.pause();sfx.ctx.suspend()}}
 function live(){return sfx.on&&sfx.ctx&&sfx.ctx.state==='running'&&!document.hidden}
