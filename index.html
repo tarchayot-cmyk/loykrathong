@@ -154,7 +154,7 @@ s+=`<path d="${z}" fill="none" stroke="${b}" stroke-width="3" opacity=".75"/><pa
 <circle cx="58" cy="38" r="2.5" fill="#fff"/><circle cx="100" cy="34" r="2" fill="#fff"/><circle cx="80" cy="44" r="3" fill="#fff" opacity=".9"/>
 <ellipse cx="80" cy="170" rx="37" ry="6" fill="none" stroke="#7a4b23" stroke-width="3"/><path d="M45,170L115,170" stroke="#7a4b23" stroke-width="2"/>
 <path d="M80,148C89,159 89,167 80,171C71,167 71,159 80,148Z" fill="#ffb703"/><path d="M80,157C84,162 84,167 80,169C76,167 76,162 80,157Z" fill="#fff6c9"/></svg>`;return svgURL(s)}
-const PRE={};KC.forEach((c,i)=>PRE['k'+(i+1)]=krSVG(c));LC.forEach((c,i)=>PRE['l'+(i+1)]=lnSVG(c));
+const NPRE={k:9,l:6},PRE={};for(let i=1;i<=NPRE.k;i++)PRE['k'+i]=`presets/k${i}.webp`;for(let i=1;i<=NPRE.l;i++)PRE['l'+i]=`presets/l${i}.webp`;
 const srcOf=v=>v.img||PRE[v.preset]||PRE[v.kind==='lantern'?'l1':'k1'];
 
 /* ---------- floating items ---------- */
@@ -182,8 +182,8 @@ function placeGlow(im,gl){try{const w=64,h=Math.max(1,Math.round(64*im.naturalHe
   gl.style.left=(cx*100-8)+'%';gl.style.top=(cy*100-gh/2)+'%';gl.style.display=''}catch(e){}}
 function addK(src,name,prayer,id,o={}){const g=groups[nextG()],W=Math.max(innerWidth*g.w/100,72),k=document.createElement('div'),d=g.d*rnd(.85,1.2);k.className='k';k._n=name;k._p=prayer;k._z=g.z;k._kind='krathong';
 k.style.cssText=`bottom:${g.b+rnd(-.3,.3)}%;width:${W}px;z-index:${g.z};animation-duration:${d}s;animation-delay:-${o.fresh?d*.22:rnd(0,d)}s`;
-k.innerHTML=`<div class="bub"></div><div class="b" style="animation-duration:${rnd(3.2,5)}s;animation-delay:-${rnd(0,4)}s"><img alt=""><div class="g"${o.preset?' style="left:51%;top:14%"':''}></div></div>`;
-const im=k.querySelector('img'),gl=k.querySelector('.g');if(!o.preset){gl.style.display='none';im.onload=()=>placeGlow(im,gl)}im.src=src;
+k.innerHTML=`<div class="bub"></div><div class="b" style="animation-duration:${rnd(3.2,5)}s;animation-delay:-${rnd(0,4)}s"><img alt=""><div class="g"></div></div>`;
+const im=k.querySelector('img'),gl=k.querySelector('.g');gl.style.display='none';im.onload=()=>placeGlow(im,gl);im.src=src;
 k.onclick=()=>tap(k,id);document.body.appendChild(k);return k}
 function addL(src,name,prayer,id,o={}){const l=document.createElement('div'),d=rnd(45,70);l.className='ul';l._n=name;l._p=prayer;l._z=1;l._kind='lantern';
 l.style.cssText=`left:${rnd(3,86)}%;animation-duration:${d}s;animation-delay:-${o.fresh?d*.1:rnd(0,d)}s`;
@@ -348,7 +348,7 @@ $('#nm').value=ls.get('lk_name','');
 $('#tg').onclick=()=>$('#panel').classList.toggle('on');
 const ms=x=>$('#ms').textContent=x;
 function buildPick(){const p=$('#pick');p.innerHTML='';const pre=mode==='lantern'?'l':'k';
-  ['up',1,2,3,4,5,6].forEach(n=>{const id=n==='up'?'up':pre+n,b=document.createElement('button');b.type='button';
+  ['up',...Array.from({length:NPRE[pre]},(_,i)=>i+1)].forEach(n=>{const id=n==='up'?'up':pre+n,b=document.createElement('button');b.type='button';
     if(id==='up')b.innerHTML='🎨<br>รูปที่<br>วาดเอง';else{b.innerHTML='<img alt="">';b.firstChild.src=PRE[id]}
     if(id===choice)b.classList.add('on');b.onclick=()=>{choice=id;[...p.children].forEach(x=>x.classList.toggle('on',x===b));$('#upbox').classList.toggle('on',id==='up')};p.appendChild(b)});
   $('#upbox').classList.toggle('on',choice==='up')}
