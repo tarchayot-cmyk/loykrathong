@@ -233,29 +233,28 @@ const big={P:[],W:0,H:0,dpr:1,spr:{},last:performance.now()-78000,live:false};
 {const c=document.createElement('canvas');c.id='bigfw';$('#sky').appendChild(c);big.c=c;big.ctx=c.getContext('2d');
  const sz=()=>{big.dpr=Math.min(devicePixelRatio||1,2);big.W=innerWidth;big.H=innerHeight;c.width=big.W*big.dpr;c.height=big.H*big.dpr};sz();addEventListener('resize',sz)}
 function fwSpr(col){if(big.spr[col])return big.spr[col];const s=document.createElement('canvas');s.width=s.height=32;const g=s.getContext('2d'),r=g.createRadialGradient(16,16,0,16,16,16);
-  r.addColorStop(0,'#fff');r.addColorStop(.2,col);r.addColorStop(.5,col+'55');r.addColorStop(1,col+'00');g.fillStyle=r;g.fillRect(0,0,32,32);return big.spr[col]=s}
+  r.addColorStop(0,col);r.addColorStop(.35,col);r.addColorStop(.6,col+'33');r.addColorStop(1,col+'00');g.fillStyle=r;g.fillRect(0,0,32,32);return big.spr[col]=s}
 const FWC=['#ff4d6d','#ffd23f','#3ddcff','#b388ff','#5dff9b','#ff9f1c','#ffffff','#ff7af5'];
 function part(o){big.P.push(Object.assign({vx:0,vy:0,age:0,life:2,size:3,drag:1.6,grav:30,flick:0,col:'#fff',trail:0,then:null},o))}
 function ring(x,y,n,speed,col,o={}){const off=Math.random()*6.28;for(let i=0;i<n;i++){const a=off+i/n*6.283,v=speed*(o.jit?rnd(1-o.jit,1):1);part({x,y,vx:Math.cos(a)*v,vy:Math.sin(a)*v,col,...o})}}
 function launchBig(){const W=big.W,H=big.H,x=W*rnd(.3,.7),y=H*rnd(.24,.32),R=Math.min(W,H*1.1)*.36,[c1,c2,c3]=FWC.slice().sort(()=>Math.random()-.5);
   part({x,y:H*.74,vy:-(H*.74-y)/1.25,vx:rnd(-12,12),life:1.25,size:3.5,drag:0,grav:0,col:'#ffe3a3',trail:1,then:p=>{
     const X=p.x,Y=p.y,v=R*1.7;
-    part({x:X,y:Y,life:.35,size:R*.55,drag:0,grav:0,col:'#fff4d6',flash:1});                 // flash
     ring(X,Y,120,v,c1,{life:2.6,size:3.2,jit:.06,grav:26});                                  // big outer shell
     ring(X,Y,80,v*.66,c2,{life:2.2,size:3,jit:.05,grav:22});                                 // second layer
-    ring(X,Y,44,v*.36,'#ffffff',{life:1.7,size:2.6,flick:1,grav:18});                        // strobing core
+    ring(X,Y,36,v*.36,c3,{life:1.7,size:2.2,flick:1,grav:18});                               // strobing core
     ring(X,Y,60,v*.85,'#ffcf6b',{life:3.6,size:2,jit:.3,grav:60,drag:2.2,trail:1});           // golden willow
     setTimeout(()=>{big.P.filter(q=>q.col===c1&&q.age>.6).sort(()=>Math.random()-.5).slice(0,7).forEach(q=>ring(q.x,q.y,18,R*.45,c3,{life:1.3,size:2.4,grav:30}))},900);   // crossettes
-    setTimeout(()=>{for(let i=0;i<70;i++){const a=rnd(0,6.28),d=rnd(.2,1)*R;part({x:X+Math.cos(a)*d,y:Y+Math.sin(a)*d+R*.15,life:rnd(.5,1),size:1.8,col:'#ffffff',flick:1,grav:10,drag:0})}},1500); // crackle
+    setTimeout(()=>{for(let i=0;i<30;i++){const a=rnd(0,6.28),d=rnd(.2,1)*R;part({x:X+Math.cos(a)*d,y:Y+Math.sin(a)*d+R*.15,life:rnd(.5,1),size:1.6,col:'#ffd27a',flick:1,grav:10,drag:0})}},1500); // crackle
   }})}
 function bigFrame(now){const dt=Math.min(.05,(now-(big.t||now))/1000);big.t=now;const {ctx,dpr}=big,P=big.P;
   if(!P.length&&big.dirty){ctx.setTransform(1,0,0,1,0,0);ctx.clearRect(0,0,big.c.width,big.c.height);big.dirty=0}
-  if(P.length){big.dirty=1;ctx.setTransform(dpr,0,0,dpr,0,0);ctx.globalCompositeOperation='destination-out';ctx.fillStyle='rgba(0,0,0,.28)';ctx.fillRect(0,0,big.W,big.H);ctx.globalCompositeOperation='lighter';
+  if(P.length){big.dirty=1;ctx.setTransform(dpr,0,0,dpr,0,0);ctx.globalCompositeOperation='destination-out';ctx.fillStyle='rgba(0,0,0,.28)';ctx.fillRect(0,0,big.W,big.H);ctx.globalCompositeOperation='source-over';
     for(let i=P.length-1;i>=0;i--){const p=P[i];p.age+=dt;if(p.age>=p.life){P.splice(i,1);if(p.then)p.then(p);continue}
       const k=Math.exp(-p.drag*dt);p.vx*=k;p.vy=p.vy*k+p.grav*dt;p.x+=p.vx*dt;p.y+=p.vy*dt;
       if(p.trail&&Math.random()<.5)part({x:p.x,y:p.y,vx:rnd(-8,8),vy:rnd(0,20),life:.5,size:1.6,col:p.col==='#ffe3a3'?'#ffb84d':p.col,drag:2,grav:40});
       let a=1-p.age/p.life;if(p.flash)a*=a;if(p.flick)a*=Math.random()<.5?1:.15;ctx.globalAlpha=Math.max(0,Math.min(1,a));
-      const s=p.flash?p.size:p.size*(1.6+a);ctx.drawImage(fwSpr(p.col),p.x-s,p.y-s,s*2,s*2)}
+      const s=p.size*1.25;ctx.drawImage(fwSpr(p.col),p.x-s,p.y-s,s*2,s*2)}
     ctx.globalAlpha=1;ctx.globalCompositeOperation='source-over'}
   requestAnimationFrame(bigFrame)}
 requestAnimationFrame(bigFrame);
