@@ -182,29 +182,37 @@ function placeGlow(im,gl){try{const w=64,h=Math.max(1,Math.round(64*im.naturalHe
   const cx=pts.reduce((s,p)=>s+p[0],0)/pts.length/w,cy=pts.reduce((s,p)=>s+p[1],0)/pts.length/h,gh=16*w/h;
   gl.style.left=(cx*100-8)+'%';gl.style.top=(cy*100-gh/2)+'%';gl.style.display=''}catch(e){}}
 function addK(src,name,prayer,id,o={}){const g=groups[nextG()],W=Math.max(innerWidth*g.w/100,72),k=document.createElement('div'),d=g.d*rnd(.85,1.2);k.className='k';k._n=name;k._p=prayer;k._z=g.z;k._kind='krathong';
-k.style.cssText=`bottom:${g.b+rnd(-.3,.3)}%;width:${W}px;z-index:${g.z};animation-duration:${d}s;animation-delay:-${o.fresh?d*.22:rnd(0,d)}s`;
+k.style.cssText=`bottom:${g.b+rnd(-.3,.3)}%;width:${W}px;z-index:${g.z};animation-duration:${d}s;animation-delay:-${o.enter?0:o.fresh?d*.22:rnd(0,d)}s`;
 k.innerHTML=`<div class="bub"></div><div class="b" style="animation-duration:${rnd(3.2,5)}s;animation-delay:-${rnd(0,4)}s"><img alt=""><div class="g"></div></div>`;
 const im=k.querySelector('img'),gl=k.querySelector('.g');gl.style.display='none';im.onload=()=>placeGlow(im,gl);im.src=src;
-k.onclick=()=>tap(k,id);document.body.appendChild(k);return k}
+k.onclick=()=>tap(k,id);if(id)k.addEventListener('animationiteration',e=>{if(e.target===k)rotate(k,id)});document.body.appendChild(k);return k}
 function addL(src,name,prayer,id,o={}){const l=document.createElement('div'),d=rnd(45,70);l.className='ul';l._n=name;l._p=prayer;l._z=1;l._kind='lantern';
-l.style.cssText=`left:${rnd(3,86)}%;animation-duration:${d}s;animation-delay:-${o.fresh?d*.1:rnd(0,d)}s`;
+l.style.cssText=`left:${rnd(3,86)}%;animation-duration:${d}s;animation-delay:-${o.enter?0:o.fresh?d*.1:rnd(0,d)}s`;
 l.innerHTML=`<div class="sw" style="animation-duration:${rnd(3.5,5.5)}s"><img alt=""><div class="bub"></div></div>`;
 l.querySelector('img').src=src;
-l.onclick=()=>tap(l,id);document.body.appendChild(l);return l}
+l.onclick=()=>tap(l,id);if(id)l.addEventListener('animationiteration',e=>{if(e.target===l)rotate(l,id)});document.body.appendChild(l);return l}
 demos=[IMG,...KS].map(s=>addK(s,'',''));
-function put(v,fresh){if(!v||els[v.id])return null;const kind=v.kind==='lantern'?'lantern':'krathong';
-  const el=kind==='lantern'?addL(srcOf(v),v.name,v.prayer,v.id,{fresh}):addK(srcOf(v),v.name,v.prayer,v.id,{fresh,preset:!v.img});
+function put(v,mode){if(!v||els[v.id])return null;const kind=v.kind==='lantern'?'lantern':'krathong',o2={fresh:mode===true,enter:mode==='enter'};
+  const el=kind==='lantern'?addL(srcOf(v),v.name,v.prayer,v.id,o2):addK(srcOf(v),v.name,v.prayer,v.id,o2);
   els[v.id]=el;const o=orders[kind];o.push(v.id);if(kind==='krathong'&&demos.length)demos.pop().remove();
   while(o.length>MAX[kind]){const x=o.shift();if(els[x]){els[x].remove();delete els[x]}}return el}
-function drop(id){const el=els[id];if(el){el.remove();delete els[id];const o=orders[el._kind],i=o.indexOf(id);if(i>=0)o.splice(i,1)}document.querySelector(`.row[data-id="${id}"]`)?.remove();refreshCount()}
+/* everyone gets a turn: all items stay in a pool; at most MAX are on screen, and each time one floats off screen it is swapped for the next one not shown */
+const pool={krathong:[],lantern:[]},ptr={krathong:0,lantern:0};
+function unshow(id){const el=els[id];if(!el)return;el.remove();delete els[id];const o=orders[el._kind],i=o.indexOf(id);if(i>=0)o.splice(i,1)}
+async function rotate(el,id){const kind=el._kind,P=pool[kind];if(el._busy||!sb||P.length<=orders[kind].length)return;el._busy=1;
+  let nid=null;for(let n=0;n<P.length;n++){ptr[kind]=(ptr[kind]+1)%P.length;if(!els[P[ptr[kind]]]){nid=P[ptr[kind]];break}}
+  try{if(nid){const {data}=await sb.from('krathongs').select(COLS).eq('id',nid).maybeSingle();if(data&&!els[nid]&&els[id]){unshow(id);put(data,'enter');return}}}catch(e){}
+  el._busy=0}
+function drop(id){for(const k in pool){const i=pool[k].indexOf(id);if(i>=0)pool[k].splice(i,1)}const el=els[id];if(el){el.remove();delete els[id];const o=orders[el._kind],i=o.indexOf(id);if(i>=0)o.splice(i,1)}document.querySelector(`.row[data-id="${id}"]`)?.remove();refreshCount()}
 async function refreshCount(){for(const k of ['krathong','lantern']){const {count}=await sb.from('krathongs').select('id',{count:'exact',head:true}).eq('kind',k);if(count!=null)cnt[k]=count}setCnt()}
 async function delK(id){const {data,error}=await sb.rpc('delete_krathong',{p_id:id,p_key:myKeys[id]});if(error)return alert('ลบไม่สำเร็จ ลองใหม่อีกครั้ง');delete myKeys[id];saveKeys();if(data)drop(id)}
 const COLS='id,kind,name,prayer,img,preset';
 (async()=>{try{if(!window.supabase)throw new Error('supabase-js not loaded');sb=supabase.createClient(SB_URL,SB_KEY);
-  for(const k of ['krathong','lantern']){const {data,error}=await sb.from('krathongs').select(COLS).eq('kind',k).order('created_at',{ascending:false}).limit(MAX[k]);if(error)throw error;data.reverse().forEach(v=>put(v))}
+  for(const k of ['krathong','lantern']){const ids=await sb.from('krathongs').select('id').eq('kind',k).order('created_at',{ascending:false}).limit(20000);if(ids.data){pool[k]=ids.data.map(r=>r.id);ptr[k]=Math.min(MAX[k],pool[k].length)-1}
+    const {data,error}=await sb.from('krathongs').select(COLS).eq('kind',k).order('created_at',{ascending:false}).limit(MAX[k]);if(error)throw error;data.reverse().forEach(v=>put(v))}
   refreshCount();loadSky();sb.channel('sky').on('postgres_changes',{event:'*',schema:'public',table:'sky_messages'},()=>loadSky()).subscribe();
   sb.channel('krathongs').on('postgres_changes',{event:'*',schema:'public',table:'krathongs'},async p=>{
-    if(p.eventType==='INSERT'){if(els[p.new.id])return;let v=p.new;if(!v.img&&!v.preset)v=(await sb.from('krathongs').select(COLS).eq('id',v.id).single()).data;if(v&&!els[v.id]){put(v,true);cnt[v.kind==='lantern'?'lantern':'krathong']++;setCnt()}}
+    if(p.eventType==='INSERT'){if(els[p.new.id])return;let v=p.new;if(!v.img&&!v.preset)v=(await sb.from('krathongs').select(COLS).eq('id',v.id).single()).data;if(v&&!els[v.id]){const kk=v.kind==='lantern'?'lantern':'krathong';if(!pool[kk].includes(v.id))pool[kk].unshift(v.id);put(v,true);cnt[kk]++;setCnt()}}
     else if(p.eventType==='DELETE')drop(p.old.id)}).subscribe();
   if(adminPass){const {data}=await sb.rpc('admin_check',{p_pass:adminPass});if(data)document.body.classList.add('admin');else setAdmin(null)}
   else if(location.hash==='#admin')enterAdmin();
@@ -383,7 +391,7 @@ $('#go').onclick=async()=>{const btn=$('#go');if(btn.disabled)return;if(!sb)retu
   try{const nm=$('#nm').value.trim(),pr=$('#pr').value.trim();ls.set('lk_name',nm);
     const {data,error}=await sb.rpc('add_krathong',{p_kind:mode,p_name:nm,p_prayer:pr,p_img:img,p_preset:preset});if(error)throw error;
     const row=data[0];myKeys[row.id]=row.del_key;saveKeys();
-    if(!els[row.id]){put({id:row.id,kind:mode,name:nm,prayer:pr,img,preset},true);cnt[mode]++;setCnt()}
+    if(!pool[mode].includes(row.id))pool[mode].unshift(row.id);if(!els[row.id]){put({id:row.id,kind:mode,name:nm,prayer:pr,img,preset},true);cnt[mode]++;setCnt()}
     if(els[row.id])setTimeout(()=>show(els[row.id]),mode==='lantern'?2500:300);
     ms('');$('#panel').classList.remove('on');$('#fi').value='';$('#pr').value=''}
   catch(e){console.warn(e);ms('บันทึกไม่สำเร็จ ลองใหม่อีกครั้ง')}finally{btn.disabled=false}};
