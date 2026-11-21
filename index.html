@@ -185,23 +185,23 @@ const ls={get(k,d){try{return JSON.parse(localStorage.getItem(k))??d}catch(e){re
 const myKeys=ls.get('lk_keys',{}),saveKeys=()=>ls.set('lk_keys',myKeys);
 let adminPass=null;try{adminPass=sessionStorage.getItem('lk_admin')}catch(e){}
 const setCnt=()=>{const a=[];if(cnt.krathong)a.push(`🪷 ${cnt.krathong.toLocaleString('th-TH')} กระทง`);if(cnt.lantern)a.push(`🏮 ${cnt.lantern.toLocaleString('th-TH')} โคม`);$('#cnt').textContent=a.length?'ร่วมแล้ว '+a.join(' · '):''};
-function show(k){if(!k._p)return;const b=k.querySelector('.bub');b.textContent=(k._kind==='lantern'?'🏮 ':'🪷 ')+(k._n?k._n+': ':'')+k._p;b.classList.add('on');if(k._kind!=='lantern')k.style.zIndex=30;clearTimeout(k._t);k._t=setTimeout(()=>{b.classList.remove('on');k.style.zIndex=k._z},5500)}
+function show(k){if(!k._p&&!k._n)return;const b=k.querySelector('.bub');b.textContent=(k._kind==='lantern'?'🏮 ':'🪷 ')+(k._n||'')+(k._n&&k._p?': ':'')+(k._p||'');b.classList.add('on');k._on=1;if(k._kind!=='lantern')k.style.zIndex=30;clearTimeout(k._t);k._t=setTimeout(()=>{b.classList.remove('on');k._on=0;k.style.zIndex=k._z},3000)}
 function tap(el,id){const what=NAME[el._kind]||'กระทง';
+  if(!el._on||!id||!(adminPass||myKeys[id]))return show(el);
   if(adminPass&&id){if(confirm(`[แอดมิน] ลบ${what}ของ "${el._n||'ไม่ระบุชื่อ'}"?\n${el._p||''}`))adminDel(id);return}
   if(id&&myKeys[id]&&confirm(`${what}ของคุณ${el._p?': '+el._p:''}\n\nต้องการลบ${what}นี้ไหม?`))return delK(id);
   show(el)}
 function addK(src,name,prayer,id,o={}){const g=groups[nextG()],W=Math.max(innerWidth*g.w/100,72),k=document.createElement('div'),d=g.d*rnd(.85,1.2);k.className='k';k._n=name;k._p=prayer;k._z=g.z;k._kind='krathong';
 k.style.cssText=`bottom:${g.b+rnd(-.5,.5)}%;width:${W}px;z-index:${g.z};animation-duration:${d}s;animation-delay:-${o.fresh?d*.22:rnd(0,d)}s`;
-k.innerHTML=`<div class="bub"></div><div class="b" style="animation-duration:${rnd(3.2,5)}s;animation-delay:-${rnd(0,4)}s"><img alt=""><div class="g"${o.preset?' style="left:51%;top:14%"':''}></div>${name?`<div class="cap"></div>`:''}</div>`;
-k.querySelector('img').src=src;if(name)k.querySelector('.cap').textContent=name;
+k.innerHTML=`<div class="bub"></div><div class="b" style="animation-duration:${rnd(3.2,5)}s;animation-delay:-${rnd(0,4)}s"><img alt=""><div class="g"${o.preset?' style="left:51%;top:14%"':''}></div></div>`;
+k.querySelector('img').src=src;
 k.onclick=()=>tap(k,id);document.body.appendChild(k);return k}
 function addL(src,name,prayer,id,o={}){const l=document.createElement('div'),d=rnd(45,70);l.className='ul';l._n=name;l._p=prayer;l._z=1;l._kind='lantern';
 l.style.cssText=`left:${rnd(3,86)}%;animation-duration:${d}s;animation-delay:-${o.fresh?d*.1:rnd(0,d)}s`;
-l.innerHTML=`<div class="sw" style="animation-duration:${rnd(3.5,5.5)}s"><img alt=""><div class="bub"></div>${name?'<div class="cap"></div>':''}</div>`;
-l.querySelector('img').src=src;if(name)l.querySelector('.cap').textContent=name;
+l.innerHTML=`<div class="sw" style="animation-duration:${rnd(3.5,5.5)}s"><img alt=""><div class="bub"></div></div>`;
+l.querySelector('img').src=src;
 l.onclick=()=>tap(l,id);document.body.appendChild(l);return l}
 demos=[IMG,...KS].map(s=>addK(s,'',''));
-setInterval(()=>{const ks=[...document.querySelectorAll('.k,.ul')].filter(k=>k._p);if(ks.length)show(ks[Math.random()*ks.length|0])},4500);
 function put(v,fresh){if(!v||els[v.id])return null;const kind=v.kind==='lantern'?'lantern':'krathong';
   const el=kind==='lantern'?addL(srcOf(v),v.name,v.prayer,v.id,{fresh}):addK(srcOf(v),v.name,v.prayer,v.id,{fresh,preset:!v.img});
   els[v.id]=el;const o=orders[kind];o.push(v.id);if(kind==='krathong'&&demos.length)demos.pop().remove();
