@@ -71,7 +71,7 @@ button,input{font:inherit}
 <div id="panel">
 <div class="tabs"><button data-k="krathong" class="on">🪷 ลอยกระทง</button><button data-k="lantern">🏮 ปล่อยโคม</button></div>
 <small id="pkl">เลือกแบบกระทง</small><div class="pick" id="pick"></div>
-<div id="upbox"><small id="uph">รูปกระทงของคุณ (ถ่ายบนพื้นขาว)</small><input id="fi" type="file" accept="image/*"></div>
+<div id="upbox"><small id="uph">รูปกระทงของคุณ (วางบนพื้นเรียบสีเดียว)</small><input id="fi" type="file" accept="image/*"></div>
 <small>ชื่อของคุณ</small><input id="nm" maxlength="24"><small>คำอธิษฐาน</small><input id="pr" maxlength="90" placeholder="เช่น ขอให้ทุกคนมีความสุข">
 <div id="ms" style="font-size:12px;min-height:16px;margin-bottom:6px;color:#ffd"></div><button class="btn" id="go">ลอยกระทง 🪷</button></div></div>
 <div id="mgr"><div class="hd"><b>🛠 จัดการกระทง / โคม</b><button class="btn" id="mrf">รีเฟรช</button><button class="btn" id="mout" style="background:#555;color:#fff">ออกจากโหมดแอดมิน</button><button class="btn" id="mcl">ปิด</button></div><div id="mls"></div></div>
@@ -231,13 +231,23 @@ function buildPick(){const p=$('#pick');p.innerHTML='';const pre=mode==='lantern
   $('#upbox').classList.toggle('on',choice==='up')}
 document.querySelectorAll('.tabs button').forEach(b=>b.onclick=()=>{mode=b.dataset.k;choice=mode==='lantern'?'l1':'k1';
   document.querySelectorAll('.tabs button').forEach(x=>x.classList.toggle('on',x===b));
-  const L=mode==='lantern';$('#pkl').textContent=L?'เลือกแบบโคม':'เลือกแบบกระทง';$('#uph').textContent=L?'รูปโคมของคุณ (ถ่ายบนพื้นขาว)':'รูปกระทงของคุณ (ถ่ายบนพื้นขาว)';
+  const L=mode==='lantern';$('#pkl').textContent=L?'เลือกแบบโคม':'เลือกแบบกระทง';$('#uph').textContent=L?'รูปโคมของคุณ (วางบนพื้นเรียบสีเดียว)':'รูปกระทงของคุณ (วางบนพื้นเรียบสีเดียว)';
   $('#go').textContent=L?'ปล่อยโคม 🏮':'ลอยกระทง 🪷';ms('');buildPick()});
 buildPick();
-function clean(img,mx){const s=Math.min(1,mx/Math.max(img.width,img.height)),c=document.createElement('canvas');c.width=img.width*s;c.height=img.height*s;const x=c.getContext('2d');x.drawImage(img,0,0,c.width,c.height);const D=x.getImageData(0,0,c.width,c.height),p=D.data,W=c.width,H=c.height,seen=new Uint8Array(W*H),st=[];
-const white=i=>p[i*4]>215&&p[i*4+1]>215&&p[i*4+2]>215;
-for(let i=0;i<W;i++){st.push(i,(H-1)*W+i)}for(let j=0;j<H;j++){st.push(j*W,j*W+W-1)}
-while(st.length){const i=st.pop();if(seen[i]||!white(i))continue;seen[i]=1;p[i*4+3]=0;const x0=i%W;if(x0>0)st.push(i-1);if(x0<W-1)st.push(i+1);if(i>=W)st.push(i-W);if(i<W*(H-1))st.push(i+W)}
+function clean(img,mx){const s=Math.min(1,mx/Math.max(img.width,img.height)),c=document.createElement('canvas');c.width=Math.max(1,Math.round(img.width*s));c.height=Math.max(1,Math.round(img.height*s));const x=c.getContext('2d');x.drawImage(img,0,0,c.width,c.height);
+const D=x.getImageData(0,0,c.width,c.height),p=D.data,W=c.width,H=c.height,N=W*H;
+/* background colour = median of the (non-transparent) border pixels, so any plain colour works */
+const edge=[];for(let i=0;i<W;i++)edge.push(i,(H-1)*W+i);for(let j=1;j<H-1;j++)edge.push(j*W,j*W+W-1);
+const op=edge.filter(i=>p[i*4+3]>30),med=k=>{const a=op.map(i=>p[i*4+k]).sort((u,v)=>u-v);return a.length?a[a.length>>1]:255},bg=[med(0),med(1),med(2)];
+const dist=(i,r,g,b)=>Math.abs(p[i*4]-r)+Math.abs(p[i*4+1]-g)+Math.abs(p[i*4+2]-b);
+const FAR=150,STEP=36,seen=new Uint8Array(N),st=[];
+/* flood-fill from the border: a pixel is background if it is transparent, or close to the background colour and to the neighbour it was reached from (handles shadows/uneven light) */
+const isBg=(i,f)=>p[i*4+3]<=30||(dist(i,bg[0],bg[1],bg[2])<FAR&&(f<0||dist(i,p[f*4],p[f*4+1],p[f*4+2])<STEP));
+edge.forEach(i=>st.push(i,-1));
+while(st.length){const f=st.pop(),i=st.pop();if(seen[i]||!isBg(i,f))continue;seen[i]=1;const x0=i%W;if(x0>0)st.push(i-1,i);if(x0<W-1)st.push(i+1,i);if(i>=W)st.push(i-W,i);if(i<N-W)st.push(i+W,i)}
+for(let i=0;i<N;i++)if(seen[i])p[i*4+3]=0;
+/* soften the cut edge by one pixel */
+for(let i=0;i<N;i++){if(seen[i])continue;const x0=i%W;if((x0>0&&seen[i-1])||(x0<W-1&&seen[i+1])||(i>=W&&seen[i-W])||(i<N-W&&seen[i+W]))p[i*4+3]=Math.min(p[i*4+3],170)}
 x.putImageData(D,0,0);return c.toDataURL('image/webp',.85)}
 function readImg(f){return new Promise((ok,no)=>{const r=new FileReader();r.onerror=no;r.onload=()=>{const im=new Image();im.onerror=no;im.onload=()=>ok(im);im.src=r.result};r.readAsDataURL(f)})}
 $('#go').onclick=async()=>{const btn=$('#go');if(btn.disabled)return;if(!sb)return ms('เชื่อมต่อฐานข้อมูลไม่ได้ ลองรีเฟรชหน้า');
