@@ -53,7 +53,11 @@ button,input{font:inherit}
 .pick img{width:100%;height:100%;object-fit:contain;display:block}
 #upbox{display:none}#upbox.on{display:block}
 .bub{position:absolute;bottom:100%;left:50%;transform:translateX(-50%);width:max-content;max-width:min(240px,60vw);background:rgba(255,248,220,.96);color:#2a1a00;padding:6px 10px;border-radius:12px;font-size:13px;opacity:0;transition:opacity .4s;pointer-events:none;z-index:50;text-align:center}.bub.on{opacity:1}.ul .bub.mine{top:auto;bottom:100%;margin:0 0 10px}.bub.mine{border:2px solid #ffb703;box-shadow:0 0 14px rgba(255,183,3,.7);font-weight:600}
-.moon{position:absolute;left:5%;top:calc(env(safe-area-inset-top,0px) + 60px);width:clamp(110px,20vw,260px);aspect-ratio:1;filter:drop-shadow(0 0 28px rgba(255,240,150,.75));animation:pl 6s ease-in-out infinite alternate}.moon img{width:100%;height:100%;display:block;}@keyframes pl{to{filter:drop-shadow(0 0 48px rgba(255,240,150,.95))}}.hl{position:absolute;top:0;z-index:10;width:clamp(46px,7vw,100px);transform-origin:50% 0;animation:sw 5s ease-in-out infinite alternate;filter:drop-shadow(0 0 14px rgba(255,200,90,.55));pointer-events:none}.hl i{display:block;width:1px;height:36px;background:rgba(255,255,255,.5);margin:0 auto}.hl img{width:100%;display:block}@keyframes sw{from{transform:rotate(-4deg)}to{transform:rotate(4deg)}}
+.moon{position:absolute;left:5%;top:calc(env(safe-area-inset-top,0px) + 60px);width:clamp(110px,20vw,260px);aspect-ratio:1;filter:drop-shadow(0 0 28px rgba(255,240,150,.75));animation:pl 6s ease-in-out infinite alternate}.moon img{width:100%;height:100%;display:block;}.moon img.ear{position:absolute;left:42.5%;top:46.5%;width:19%;height:15.5%;transform-origin:48.7% 90%;animation:ear 12s ease-in-out infinite}
+.moon img.tail{position:absolute;left:21%;top:76.5%;width:9%;height:15%;transform-origin:89% 50%;animation:tail 12s ease-in-out infinite}
+@keyframes ear{0%,33.3%{transform:rotate(0)}35%{transform:rotate(-14deg)}36.3%{transform:rotate(4deg)}37.5%,100%{transform:rotate(0)}}
+@keyframes tail{0%,53.7%{transform:rotate(0)}54.8%{transform:rotate(-18deg)}55.9%{transform:rotate(12deg)}57%{transform:rotate(-6deg)}58%,100%{transform:rotate(0)}}
+@keyframes pl{to{filter:drop-shadow(0 0 48px rgba(255,240,150,.95))}}.hl{position:absolute;top:0;z-index:10;width:clamp(46px,7vw,100px);transform-origin:50% 0;animation:sw 5s ease-in-out infinite alternate;filter:drop-shadow(0 0 14px rgba(255,200,90,.55));pointer-events:none}.hl i{display:block;width:1px;height:36px;background:rgba(255,255,255,.5);margin:0 auto}.hl img{width:100%;display:block}@keyframes sw{from{transform:rotate(-4deg)}to{transform:rotate(4deg)}}
 @media(orientation:landscape) and (max-height:600px){.hl{width:clamp(26px,9vh,60px)}.hl i{height:12px}.moon{width:clamp(70px,24vh,160px);top:calc(env(safe-area-inset-top,0px) + 44px)}}
 @media(max-width:600px){h1{text-align:left;font-size:16px;padding-right:150px}body.admin h1{padding-right:190px}#adm{padding:8px 11px}#adm span{display:none}}
 .ln2{position:absolute;bottom:-170px;width:clamp(64px,10vw,120px);animation:rise linear infinite;filter:drop-shadow(0 0 18px rgba(255,190,80,.65))}.ln2 img{width:100%;display:block}
@@ -131,7 +135,7 @@ function frame(now){const dt=Math.min(.1,(now-last)/1000);last=now;
 requestAnimationFrame(frame);
 addEventListener('resize',()=>{clearTimeout(rz);rz=setTimeout(()=>layers.forEach(size),200)})}
 
-{const m=document.createElement('div');m.className='moon';m.innerHTML='<img alt="">';m.firstChild.src=MOON;sky.appendChild(m)}
+{const m=document.createElement('div');m.className='moon';m.innerHTML='<img alt="" src="bg/moon.webp"><img class="ear" alt="" src="bg/ear.png"><img class="tail" alt="" src="bg/tail.png">';sky.appendChild(m)}   /* rabbit: ears and tail move now and then, the body never does */
 [[36,0],[53,-2],[69,-3.5]].forEach(([x,d],i)=>{const h=document.createElement('div');h.className='hl';h.style.cssText=`left:${x}%;animation-delay:${d}s;animation-duration:${4.6+i*.7}s`;h.innerHTML='<i></i><img alt="">';h.lastChild.src=LS[i];document.body.appendChild(h)});
 
 /* ---------- ready-made krathong & lantern designs (drawn in SVG) ---------- */
