@@ -387,7 +387,10 @@ $('#snd').onclick=e=>{e.stopPropagation();sfxSet(!sfx.on)};
 {const de=document.documentElement,req=de.requestFullscreen||de.webkitRequestFullscreen,ok=document.fullscreenEnabled||document.webkitFullscreenEnabled,b=$('#fs'),cur=()=>document.fullscreenElement||document.webkitFullscreenElement;
  if(req&&ok){b.style.display='block';b.onclick=e=>{e.stopPropagation();if(cur())(document.exitFullscreen||document.webkitExitFullscreen).call(document);else{const r=req.call(de);if(r&&r.catch)r.catch(()=>{})}};
   const upd=()=>{b.textContent=cur()?'🗗':'⛶';b.setAttribute('aria-label',cur()?'ออกจากเต็มจอ':'เต็มจอ')};document.addEventListener('fullscreenchange',upd);document.addEventListener('webkitfullscreenchange',upd);upd()}}
-document.addEventListener('visibilitychange',()=>{if(!sfx.ctx||!sfx.on)return;if(document.hidden){sfx.au.pause()}else{sfx.ctx.resume();sfx.au.play().catch(()=>{})}});
+/* stop all sound when the page is hidden, minimised (e.g. LINE's mini window), or the app loses focus; resume when it comes back */
+{const away=()=>{if(!sfx.ctx)return;try{sfx.au.pause()}catch(e){}sfx.ctx.suspend()},back=()=>{if(!sfx.ctx||!sfx.on||document.hidden)return;sfx.ctx.resume();sfx.au.play().catch(()=>{})};
+ document.addEventListener('visibilitychange',()=>document.hidden?away():back());addEventListener('pagehide',away);addEventListener('pageshow',back);
+ addEventListener('blur',away);addEventListener('focus',back);document.addEventListener('freeze',away)}
 const BADRX=/(เหี้ย|ควย|เย็ด|สัส|ไอ้สัตว์|อีสัตว์|มึง|แม่ง|เชี่ย|ระยำ|จัญไร|เงี่ยน|แตด|กระหรี่|ดอกทอง|ส้นตีน|ชาติหมา|หี(?!บ)|ร่าน|อีดอก|ไอ้เวร|ฉิบหาย|ห่าราก|โคตรพ่อ|โคตรแม่|พ่อมึง|แม่มึง|fuck|shit|bitch|dick|pussy|asshole|cunt)/;const isBad=s=>BADRX.test(String(s||'').toLowerCase().replace(/[\s\p{P}\p{S}0-9]/gu,''));
 /* ---------- lite mode: if the phone keeps dropping below ~35 fps, switch off the heaviest effects ---------- */
 function setLite(on){if(lite===on)return;lite=on;document.body.classList.toggle('lite',on);fishLayers.forEach(l=>l.c.style.display=on?'none':'');document.querySelectorAll('.ln').forEach((e,i)=>{if(i%2)e.style.display=on?'none':''})}
