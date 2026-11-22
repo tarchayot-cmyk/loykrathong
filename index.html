@@ -118,7 +118,9 @@ sfx.pop=()=>{if(!live())return;const t=sfx.ctx.currentTime+rnd(0,.05),v=rnd(.025
 sfx.whistle=()=>{if(!live())return;const t=sfx.ctx.currentTime;tone(t,1.2,500,1600,.018,'sine');nz(t,1.2,'bandpass',2500,6,.02)};
 sfx.boom=()=>{if(!live())return;const t=sfx.ctx.currentTime;nz(t,1.6,'lowpass',260,.8,.32);tone(t,.9,90,40,.22);nz(t,.5,'bandpass',900,1,.08)};
 sfx.crackle=()=>{if(!live())return;const t=sfx.ctx.currentTime;for(let i=0;i<26;i++)nz(t+rnd(0,1.1),.025,'highpass',rnd(2500,5000),.7,rnd(.015,.04))};
-sfx.splash=big=>{if(!live())return;const t=sfx.ctx.currentTime;nz(t,big?.22:.14,'bandpass',big?850:1300,1.2,big?.05:.03);tone(t,.09,big?600:900,big?260:420,big?.035:.02)};
+sfx.bufs=[];function loadSplash(){if(sfx.bufs.length||!sfx.ctx)return;['bg/splash1.mp3','bg/splash2.mp3'].forEach(u=>fetch(u).then(r=>r.arrayBuffer()).then(b=>new Promise((ok,no)=>sfx.ctx.decodeAudioData(b,ok,no))).then(b=>sfx.bufs.push(b)).catch(()=>{}))}
+sfx.splash=big=>{if(!live())return;loadSplash();if(sfx.bufs.length){const c=sfx.ctx,s=c.createBufferSource(),g=c.createGain();s.buffer=sfx.bufs[Math.random()*sfx.bufs.length|0];s.playbackRate.value=rnd(.9,1.15);g.gain.value=big?.32:.18;s.connect(g);g.connect(sfx.master);s.start();return}   /* real recorded splashes (Pixabay); synthetic fallback below */
+  const t=sfx.ctx.currentTime;nz(t,big?.22:.14,'bandpass',big?850:1300,1.2,big?.05:.03);tone(t,.09,big?600:900,big?260:420,big?.035:.02)};
 
 for(let i=0;i<70;i++){const s=document.createElement('div');s.className='star';s.style.cssText=`left:${rnd(0,100)}%;top:${rnd(0,55)}%;animation-delay:${rnd(0,3)}s`;sky.appendChild(s)}
 for(let i=0;i<12;i++){const l=document.createElement('div'),far=Math.random();l.className='ln';l.style.cssText=`left:${rnd(2,94)}%;width:${(22+far*26).toFixed(0)}px;opacity:${(.55+far*.45).toFixed(2)};animation-duration:${(46-far*16).toFixed(1)}s;animation-delay:-${rnd(0,40).toFixed(1)}s`;
