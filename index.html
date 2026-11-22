@@ -52,7 +52,7 @@ button,input{font:inherit}
 .pick button.on{border-color:#ffb703;background:rgba(255,183,3,.2)}
 .pick img{width:100%;height:100%;object-fit:contain;display:block}
 #upbox{display:none}#upbox.on{display:block}
-.bub{position:absolute;bottom:100%;left:50%;transform:translateX(-50%);width:max-content;max-width:min(240px,60vw);background:rgba(255,248,220,.96);color:#2a1a00;padding:6px 10px;border-radius:12px;font-size:13px;opacity:0;transition:opacity .4s;pointer-events:none;z-index:50;text-align:center}.bub.on{opacity:1}
+.bub{position:absolute;bottom:100%;left:50%;transform:translateX(-50%);width:max-content;max-width:min(240px,60vw);background:rgba(255,248,220,.96);color:#2a1a00;padding:6px 10px;border-radius:12px;font-size:13px;opacity:0;transition:opacity .4s;pointer-events:none;z-index:50;text-align:center}.bub.on{opacity:1}.ul .bub.mine{top:auto;bottom:100%;margin:0 0 10px}.bub.mine{border:2px solid #ffb703;box-shadow:0 0 14px rgba(255,183,3,.7);font-weight:600}
 .moon{position:absolute;left:5%;top:calc(env(safe-area-inset-top,0px) + 60px);width:clamp(110px,20vw,260px);aspect-ratio:1;filter:drop-shadow(0 0 28px rgba(255,240,150,.75));animation:pl 6s ease-in-out infinite alternate}.moon img{width:100%;height:100%;display:block;}@keyframes pl{to{filter:drop-shadow(0 0 48px rgba(255,240,150,.95))}}.hl{position:absolute;top:0;z-index:10;width:clamp(46px,7vw,100px);transform-origin:50% 0;animation:sw 5s ease-in-out infinite alternate;filter:drop-shadow(0 0 14px rgba(255,200,90,.55));pointer-events:none}.hl i{display:block;width:1px;height:36px;background:rgba(255,255,255,.5);margin:0 auto}.hl img{width:100%;display:block}@keyframes sw{from{transform:rotate(-4deg)}to{transform:rotate(4deg)}}
 @media(orientation:landscape) and (max-height:600px){.hl{width:clamp(26px,9vh,60px)}.hl i{height:12px}.moon{width:clamp(70px,24vh,160px);top:calc(env(safe-area-inset-top,0px) + 44px)}}
 @media(max-width:600px){h1{text-align:left;font-size:16px;padding-right:150px}body.admin h1{padding-right:190px}#adm{padding:8px 11px}#adm span{display:none}}
@@ -169,7 +169,8 @@ const ls={get(k,d){try{return JSON.parse(localStorage.getItem(k))??d}catch(e){re
 const myKeys=ls.get('lk_keys',{}),saveKeys=()=>ls.set('lk_keys',myKeys);
 let adminPass=null;try{adminPass=sessionStorage.getItem('lk_admin')}catch(e){}
 const setCnt=()=>{const a=[];if(cnt.krathong)a.push(`🪷 ${cnt.krathong.toLocaleString('th-TH')} กระทง`);if(cnt.lantern)a.push(`🏮 ${cnt.lantern.toLocaleString('th-TH')} โคม`);$('#cnt').textContent=a.length?'ร่วมแล้ว '+a.join(' · '):''};
-function show(k){if(!k._p&&!k._n)return;const b=k.querySelector('.bub');b.textContent=(k._kind==='lantern'?'🏮 ':'🪷 ')+(k._n||'')+(k._n&&k._p?': ':'')+(k._p||'');b.classList.add('on');k._on=1;if(k._kind!=='lantern')k.style.zIndex=30;clearTimeout(k._t);k._t=setTimeout(()=>{b.classList.remove('on');k._on=0;k.style.zIndex=k._z},3000)}
+function show(k,ms=3000,mine=false){if(!k._p&&!k._n&&!mine)return;const b=k.querySelector('.bub');b.textContent=(mine?'✅ ':'')+(k._kind==='lantern'?'🏮 ':'🪷 ')+(k._n||'')+(k._n&&k._p?': ':'')+(k._p||'')+(mine&&!k._n&&!k._p?(k._kind==='lantern'?'ปล่อยโคมแล้ว':'ลอยกระทงแล้ว'):'');b.style.marginLeft='0';b.classList.add('on');b.classList.toggle('mine',mine);{const r=b.getBoundingClientRect(),W=innerWidth;if(r.left<8)b.style.marginLeft=(8-r.left)+'px';else if(r.right>W-8)b.style.marginLeft=(W-8-r.right)+'px'}   /* keep the bubble on screen */
+  k._on=1;if(k._kind!=='lantern')k.style.zIndex=30;clearTimeout(k._t);k._t=setTimeout(()=>{b.classList.remove('on');k._on=0;k.style.zIndex=k._z},ms)}
 function tap(el,id){const what=NAME[el._kind]||'กระทง';
   if(!el._on||!id||!(adminPass||myKeys[id]))return show(el);
   if(adminPass&&id){if(confirm(`[แอดมิน] ลบ${what}ของ "${el._n||'ไม่ระบุชื่อ'}"?\n${el._p||''}`))adminDel(id);return}
@@ -183,12 +184,12 @@ function placeGlow(im,gl){try{const w=64,h=Math.max(1,Math.round(64*im.naturalHe
   const cx=pts.reduce((s,p)=>s+p[0],0)/pts.length/w,cy=pts.reduce((s,p)=>s+p[1],0)/pts.length/h,gh=16*w/h;
   gl.style.left=(cx*100-8)+'%';gl.style.top=(cy*100-gh/2)+'%';gl.style.display=''}catch(e){}}
 function addK(src,name,prayer,id,o={}){const g=groups[nextG()],W=Math.max(innerWidth*g.w/100,72),k=document.createElement('div'),d=g.d*rnd(.85,1.2);k.className='k';k._n=name;k._p=prayer;k._z=g.z;k._kind='krathong';
-k.style.cssText=`bottom:${g.b+rnd(-.3,.3)}%;width:${W}px;z-index:${g.z};animation-duration:${d}s;animation-delay:-${o.enter?0:o.fresh?d*.22:rnd(0,d)}s`;
+k.style.cssText=`bottom:${g.b+rnd(-.3,.3)}%;width:${W}px;z-index:${g.z};animation-duration:${d}s;animation-delay:-${o.enter?0:o.fresh?d*.4:rnd(0,d)}s`;
 k.innerHTML=`<div class="bub"></div><div class="b" style="animation-duration:${rnd(3.2,5)}s;animation-delay:-${rnd(0,4)}s"><img alt=""><div class="g"></div></div>`;
 const im=k.querySelector('img'),gl=k.querySelector('.g');gl.style.display='none';im.onload=()=>placeGlow(im,gl);im.src=src;
 k.onclick=()=>tap(k,id);if(id)k.addEventListener('animationiteration',e=>{if(e.target===k)rotate(k,id)});document.body.appendChild(k);return k}
 function addL(src,name,prayer,id,o={}){const l=document.createElement('div'),d=rnd(45,70);l.className='ul';l._n=name;l._p=prayer;l._z=1;l._kind='lantern';
-l.style.cssText=`left:${rnd(3,86)}%;animation-duration:${d}s;animation-delay:-${o.enter?0:o.fresh?d*.1:rnd(0,d)}s`;
+l.style.cssText=`left:${rnd(3,86)}%;animation-duration:${d}s;animation-delay:-${o.enter?0:o.fresh?d*.4:rnd(0,d)}s`;
 l.innerHTML=`<div class="sw" style="animation-duration:${rnd(3.5,5.5)}s"><img alt=""><div class="bub"></div></div>`;
 l.querySelector('img').src=src;
 l.onclick=()=>tap(l,id);if(id)l.addEventListener('animationiteration',e=>{if(e.target===l)rotate(l,id)});document.body.appendChild(l);return l}
@@ -394,7 +395,7 @@ $('#go').onclick=async()=>{const btn=$('#go');if(btn.disabled)return;if(!sb)retu
     const {data,error}=await sb.rpc('add_krathong',{p_kind:mode,p_name:nm,p_prayer:pr,p_img:img,p_preset:preset});if(error)throw error;
     const row=data[0];myKeys[row.id]=row.del_key;saveKeys();
     if(!pool[mode].includes(row.id))pool[mode].unshift(row.id);if(!els[row.id]){put({id:row.id,kind:mode,name:nm,prayer:pr,img,preset},true);cnt[mode]++;setCnt()}
-    if(els[row.id])setTimeout(()=>show(els[row.id]),mode==='lantern'?2500:300);
+    if(els[row.id])setTimeout(()=>show(els[row.id],12000,true),300);   /* the sender sees their own name + wish for 12 s */
     ms('');$('#panel').classList.remove('on');$('#fi').value='';$('#pr').value=''}
   catch(e){console.warn(e);ms('บันทึกไม่สำเร็จ ลองใหม่อีกครั้ง')}finally{btn.disabled=false}};
 
