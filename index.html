@@ -119,7 +119,7 @@ sfx.whistle=()=>{if(!live())return;const t=sfx.ctx.currentTime;tone(t,1.2,500,16
 sfx.boom=()=>{if(!live())return;const t=sfx.ctx.currentTime;nz(t,1.6,'lowpass',260,.8,.32);tone(t,.9,90,40,.22);nz(t,.5,'bandpass',900,1,.08)};
 sfx.crackle=()=>{if(!live())return;const t=sfx.ctx.currentTime;for(let i=0;i<26;i++)nz(t+rnd(0,1.1),.025,'highpass',rnd(2500,5000),.7,rnd(.015,.04))};
 sfx.bufs=[];function loadSplash(){if(sfx.bufs.length||!sfx.ctx)return;['bg/splash1.mp3','bg/splash2.mp3'].forEach(u=>fetch(u).then(r=>r.arrayBuffer()).then(b=>new Promise((ok,no)=>sfx.ctx.decodeAudioData(b,ok,no))).then(b=>sfx.bufs.push(b)).catch(()=>{}))}
-sfx.splash=big=>{if(!live())return;loadSplash();if(sfx.bufs.length){const c=sfx.ctx,s=c.createBufferSource(),g=c.createGain();s.buffer=sfx.bufs[Math.random()*sfx.bufs.length|0];s.playbackRate.value=rnd(.9,1.15);g.gain.value=big?.32:.18;s.connect(g);g.connect(sfx.master);s.start();return}   /* real recorded splashes (Pixabay); synthetic fallback below */
+sfx.splash=big=>{if(!live())return;loadSplash();if(sfx.bufs.length){const c=sfx.ctx,s=c.createBufferSource(),g=c.createGain();s.buffer=sfx.bufs[Math.random()*sfx.bufs.length|0];s.playbackRate.value=rnd(.9,1.15);g.gain.value=big?.17:.1;s.connect(g);g.connect(sfx.master);s.start();return}   /* real recorded splashes (Pixabay); synthetic fallback below */
   const t=sfx.ctx.currentTime;nz(t,big?.22:.14,'bandpass',big?850:1300,1.2,big?.05:.03);tone(t,.09,big?600:900,big?260:420,big?.035:.02)};
 
 for(let i=0;i<70;i++){const s=document.createElement('div');s.className='star';s.style.cssText=`left:${rnd(0,100)}%;top:${rnd(0,55)}%;animation-delay:${rnd(0,3)}s`;sky.appendChild(s)}
@@ -343,7 +343,7 @@ function fishLayer(z,dmin,dmax,surf,n){const c=document.createElement('canvas');
   ly.size=()=>{ly.dpr=Math.min(devicePixelRatio||1,2);ly.W=innerWidth;ly.H=innerHeight;ly.cH=Math.round(ly.H*.4);c.width=ly.W*ly.dpr;c.height=ly.cH*ly.dpr;ly.fish.forEach(f=>f.depth=ly.y(rnd(dmin,dmax)))};
   ly.y=p=>ly.cH-p/100*ly.H;ly.size();
   for(let i=0;i<n;i++){const t=FISH_T[(i*5+z)%FISH_T.length],L=Math.max(22,Math.min(46,ly.W*.06))*rnd(.75,1.1),dir=Math.random()<.5?1:-1;
-    ly.fish.push({t,L,dir,x:rnd(0,ly.W),depth:ly.y(rnd(dmin,dmax)),sp:rnd(18,42),ph:rnd(0,6.3),st:'swim',wait:rnd(3,20),vx:0,vy:0,y:0})}
+    ly.fish.push({t,L,dir,x:rnd(0,ly.W),depth:ly.y(rnd(dmin,dmax)),sp:rnd(18,42),ph:rnd(0,6.3),st:'swim',wait:rnd(5,30),vx:0,vy:0,y:0})}
   ly.fish.forEach(f=>f.y=f.depth);fishLayers.push(ly);return ly}
 function splash(ly,x,y,big){y-=3;sfx.splash(big);ly.fx.push({k:'ring',x,y,age:0,life:.9,s:big?1.3:1});for(let i=0;i<(big?10:6);i++)ly.fx.push({k:'drop',x,y,vx:rnd(-70,70),vy:-rnd(90,200),age:0,life:.7})}
 let fLast=performance.now();
@@ -356,7 +356,7 @@ function fishFrame(now){if(lite){requestAnimationFrame(fishFrame);return}const d
       else{const py=f.y;f.vy+=g*dt;f.x+=f.vx*dt;f.y+=f.vy*dt;f.ang=Math.atan2(f.vy,Math.abs(f.vx))*.9;
         if(!f.out&&py>sY&&f.y<=sY){f.out=1;splash(ly,f.x,sY,0)}
         if(f.out&&py<sY&&f.y>=sY){f.out=2;splash(ly,f.x,sY,1)}
-        if(f.vy>0&&f.y>=f.depth){f.st='swim';f.y=f.depth;f.wait=rnd(8,24);if(Math.random()<.3)f.dir*=-1}}
+        if(f.vy>0&&f.y>=f.depth){f.st='swim';f.y=f.depth;f.wait=rnd(18,45);if(Math.random()<.3)f.dir*=-1}}
       if(f.st!=='jump'||f.y-f.L*.5>sY)continue;   /* swimming fish stay hidden under the wave; only the part above the surface shows */
       c.save();c.beginPath();c.rect(0,0,W,sY);c.clip();c.translate(f.x,f.y);c.scale(f.dir,1);c.rotate(f.ang);drawFish(c,f.t,f.L,Math.sin(f.ph));c.restore()}
     for(let i=ly.fx.length-1;i>=0;i--){const e=ly.fx[i];e.age+=dt;if(e.age>=e.life){ly.fx.splice(i,1);continue}const a=1-e.age/e.life;
