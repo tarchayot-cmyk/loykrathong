@@ -183,7 +183,7 @@ const srcOf=v=>v.img||PRE[v.preset]||PRE[v.kind==='lantern'?'l1':'k1'];
 /* ---------- floating items ---------- */
 const groups=[{b:16,w:9,z:3,d:150},{b:11.4,w:13,z:5,d:115},{b:6.9,w:18,z:7,d:85}];
 const SB_URL='https://msxbwdlnwdvcmdgcfrtf.supabase.co',SB_KEY='sb_publishable_SdnxTnFw7fjl8UH5mEWmEw_xqpSYS5S';
-const PHONE=Math.min(innerWidth,innerHeight)<600,MAX=PHONE?{krathong:30,lantern:20}:{krathong:60,lantern:40}   /* phones show fewer at once (all still take turns) */,NAME={krathong:'กระทง',lantern:'โคม'};
+const PHONE=Math.min(innerWidth,innerHeight)<600,MAX=PHONE?{krathong:10,lantern:10}:{krathong:60,lantern:40}   /* phones show fewer at once (all still take turns) */,NAME={krathong:'กระทง',lantern:'โคม'};
 let sb=null,bag=[];const cnt={krathong:0,lantern:0},orders={krathong:[],lantern:[]},els={};let demos=[];
 const nextG=()=>{if(!bag.length)bag=[0,1,2].sort(()=>Math.random()-.5);return bag.pop()};
 const ls={get(k,d){try{return JSON.parse(localStorage.getItem(k))??d}catch(e){return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
@@ -222,11 +222,14 @@ function put(v,mode){if(!v||els[v.id])return null;keep(v);const kind=v.kind==='l
   els[v.id]=el;const o=orders[kind];o.push(v.id);if(kind==='krathong'&&demos.length)demos.pop().remove();
   while(o.length>MAX[kind]){const x=o.shift();if(els[x]){els[x].remove();delete els[x]}}return el}
 /* everyone gets a turn: all items stay in a pool; at most MAX are on screen, and each time one floats off screen it is swapped for the next one not shown */
-const pool={krathong:[],lantern:[]},ptr={krathong:0,lantern:0},cache=new Map();   /* rows already downloaded are kept, so each picture is fetched once per visit */
+const pool={krathong:[],lantern:[]},ptr={krathong:0,lantern:0},rot={},cache=new Map();   /* rows already downloaded are kept, so each picture is fetched once per visit */
 const keep=v=>{if(!v)return;cache.delete(v.id);cache.set(v.id,v);if(cache.size>400)cache.delete(cache.keys().next().value)};
 function unshow(id){const el=els[id];if(!el)return;el.remove();delete els[id];const o=orders[el._kind],i=o.indexOf(id);if(i>=0)o.splice(i,1)}
 async function rotate(el,id){const kind=el._kind,P=pool[kind];if(el._busy||!sb||P.length<=orders[kind].length)return;el._busy=1;
-  let nid=null;for(let n=0;n<P.length;n++){ptr[kind]=(ptr[kind]+1)%P.length;if(!els[P[ptr[kind]]]){nid=P[ptr[kind]];break}}
+  /* who comes next: usually a pick weighted toward the newest (pool is newest-first), every 4th turn the next one in strict order so the oldest still get their turn */
+  let nid=null;rot[kind]=(rot[kind]||0)+1;
+  if(rot[kind]%4){for(let k=0;k<12&&!nid;k++){const c=P[Math.floor(P.length*Math.random()**2.2)];if(c&&!els[c])nid=c}}
+  if(!nid)for(let n=0;n<P.length;n++){ptr[kind]=(ptr[kind]+1)%P.length;if(!els[P[ptr[kind]]]){nid=P[ptr[kind]];break}}
   try{if(nid){let data=cache.get(nid);if(!data){data=(await sb.from('krathongs').select(COLS).eq('id',nid).maybeSingle()).data;keep(data)}if(data&&!els[nid]&&els[id]){unshow(id);put(data,'enter');return}}}catch(e){}
   el._busy=0}
 function drop(id){cache.delete(id);for(const k in pool){const i=pool[k].indexOf(id);if(i>=0)pool[k].splice(i,1)}const el=els[id];if(el){el.remove();delete els[id];const o=orders[el._kind],i=o.indexOf(id);if(i>=0)o.splice(i,1)}document.querySelector(`.row[data-id="${id}"]`)?.remove();refreshCount()}
