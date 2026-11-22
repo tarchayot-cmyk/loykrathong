@@ -380,6 +380,8 @@ try{if(matchMedia('(prefers-reduced-motion: reduce)').matches)goLite()}catch(e){
 let mode='krathong',choice='up';
 $('#nm').value=ls.get('lk_name','');
 $('#tg').onclick=()=>$('#panel').classList.toggle('on');
+/* tap anywhere outside the panel closes it (and that tap does nothing else) */
+document.addEventListener('click',e=>{const pn=$('#panel');if(!pn.classList.contains('on')||e.target.closest('#add'))return;pn.classList.remove('on');e.stopPropagation();e.preventDefault()},true);
 const ms=x=>$('#ms').textContent=x;
 function buildPick(){const p=$('#pick');p.innerHTML='';const pre=mode==='lantern'?'l':'k';
   ['up',...Array.from({length:NPRE[pre]},(_,i)=>i+1)].forEach(n=>{const id=n==='up'?'up':pre+n,b=document.createElement('button');b.type='button';
