@@ -339,6 +339,11 @@ const FISH_T=[
  {body:'#7ddc5a',belly:'#e6ffb8',tail:'#3fae2a',fin:'#3fae2a',h:.2,marks:(c,L,h)=>{c.fillStyle='#ffe066';c.fillRect(-L*.35,-h*.12,L*.7,h*.22)}},    // green rasbora
  {body:'#c04bff',belly:'#ff9ce0',tail:'#ff4fae',fin:'#ff4fae',h:.2,big:1,marks:()=>{}},                                                     // betta
 ];
+/* hand-drawn fish: body + separate tail that swishes around the tail joint (vector fish above are the fallback while images load) */
+const FISH_IMG=[{"w": 200, "h": 120, "cut": 68, "jy": 62.4}, {"w": 200, "h": 118, "cut": 60, "jy": 60.1}, {"w": 200, "h": 118, "cut": 60, "jy": 58.1}, {"w": 200, "h": 140, "cut": 74, "jy": 79.8}, {"w": 200, "h": 108, "cut": 62, "jy": 55.6}, {"w": 200, "h": 114, "cut": 60, "jy": 57.2}].map((m,i)=>{const t=new Image(),b=new Image();t.src=`bg/f${i+1}t.webp`;b.src=`bg/f${i+1}b.webp`;return Object.assign(m,{t,b})});
+function drawFishImg(c,F,L,wag){const k=L/F.w,h=F.h*k,x0=-L/2,y0=-h/2,cx=x0+F.cut*k,jy=y0+F.jy*k;
+  c.save();c.translate(cx,jy);c.rotate(wag*.22);c.drawImage(F.t,x0-cx,y0-jy,(F.cut+3)*k,h);c.restore();
+  c.drawImage(F.b,cx-3*k,y0,(F.w-F.cut+3)*k,h)}
 function drawFish(c,f,L,wag){const h=L*f.h,tl=f.big?.8:.62;
   c.fillStyle=f.tail;c.beginPath();c.moveTo(-L*.36,0);c.lineTo(-L*tl,-h*(f.big?1.7:1.05)+wag*h*.7);c.quadraticCurveTo(-L*(tl-.08),wag*h*.4,-L*tl,h*(f.big?1.7:1.05)+wag*h*.7);c.closePath();c.fill();
   c.fillStyle=f.fin;c.beginPath();c.moveTo(-L*.14,-h*.8);c.quadraticCurveTo(L*.0,-h*1.65,L*.14,-h*.82);c.closePath();c.fill();
@@ -350,8 +355,8 @@ function fishLayer(z,dmin,dmax,surf,n){const c=document.createElement('canvas');
   const ly={c,ctx:c.getContext('2d'),dmin,dmax,surf,fish:[],fx:[],W:0,H:0,cH:0,dpr:1};
   ly.size=()=>{ly.dpr=Math.min(devicePixelRatio||1,2);ly.W=innerWidth;ly.H=innerHeight;ly.cH=Math.round(ly.H*.4);c.width=ly.W*ly.dpr;c.height=ly.cH*ly.dpr;ly.fish.forEach(f=>f.depth=ly.y(rnd(dmin,dmax)))};
   ly.y=p=>ly.cH-p/100*ly.H;ly.size();
-  for(let i=0;i<n;i++){const t=FISH_T[(i*5+z)%FISH_T.length],L=Math.max(35,Math.min(74,ly.W*.096))*rnd(.75,1.1),dir=Math.random()<.5?1:-1;
-    ly.fish.push({t,L,dir,x:rnd(0,ly.W),depth:ly.y(rnd(dmin,dmax)),sp:rnd(18,42),ph:rnd(0,6.3),st:'swim',wait:rnd(10,40),vx:0,vy:0,y:0})}
+  for(let i=0;i<n;i++){const t=FISH_T[(i*5+z)%FISH_T.length],L=rnd(Math.max(22,Math.min(46,ly.W*.06))*.8,Math.max(35,Math.min(74,ly.W*.096))*1.1),dir=Math.random()<.5?1:-1;
+    ly.fish.push({t,L,dir,k:(i*5+z)%6,x:rnd(0,ly.W),depth:ly.y(rnd(dmin,dmax)),sp:rnd(18,42),ph:rnd(0,6.3),st:'swim',wait:rnd(10,40),vx:0,vy:0,y:0})}
   ly.fish.forEach(f=>f.y=f.depth);fishLayers.push(ly);return ly}
 function splash(ly,x,y,big){y-=3;sfx.splash(big);ly.fx.push({k:'ring',x,y,age:0,life:.9,s:big?1.3:1});for(let i=0;i<(big?10:6);i++)ly.fx.push({k:'drop',x,y,vx:rnd(-70,70),vy:-rnd(90,200),age:0,life:.7})}
 let fLast=performance.now();
@@ -367,7 +372,7 @@ function fishFrame(now){if(lite){requestAnimationFrame(fishFrame);return}const d
         if(f.out&&py<sY&&f.y>=sY){f.out=2;splash(ly,f.x,sY,1)}
         if(f.vy>0&&f.y>=f.depth){f.st='swim';f.y=f.depth;f.wait=rnd(35,80);if(Math.random()<.3)f.dir*=-1}}
       if(f.st!=='jump'||f.y-f.L*.5>sY)continue;   /* swimming fish stay hidden under the wave; only the part above the surface shows */
-      c.save();c.beginPath();c.rect(0,0,W,sY);c.clip();c.translate(f.x,f.y);c.scale(f.dir,1);c.rotate(f.ang);drawFish(c,f.t,f.L,Math.sin(f.ph));c.restore()}
+      c.save();c.beginPath();c.rect(0,0,W,sY);c.clip();c.translate(f.x,f.y);c.scale(f.dir,1);c.rotate(f.ang);{const F=FISH_IMG[f.k];if(F.b.naturalWidth&&F.t.naturalWidth)drawFishImg(c,F,f.L*1.05,Math.sin(f.ph));else drawFish(c,f.t,f.L,Math.sin(f.ph))}c.restore()}
     for(let i=ly.fx.length-1;i>=0;i--){const e=ly.fx[i];e.age+=dt;if(e.age>=e.life){ly.fx.splice(i,1);continue}const a=1-e.age/e.life;
       if(e.k==='ring'){c.strokeStyle=`rgba(255,255,255,${a*.8})`;c.lineWidth=1.6;c.beginPath();c.ellipse(e.x,e.y,(8+e.age*40)*e.s,(2.5+e.age*8)*e.s,0,0,6.3);c.stroke();
         c.beginPath();c.ellipse(e.x,e.y,(3+e.age*22)*e.s,(1+e.age*4)*e.s,0,0,6.3);c.stroke()}
